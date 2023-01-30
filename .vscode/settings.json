@@ -1,11 +1,18 @@
 {
     "files.associations": {
+        "Makefile": "c",
         "ctime": "c",
         "array": "c",
         "compare": "c",
         "functional": "c",
         "tuple": "c",
         "type_traits": "c",
-        "utility": "c"
+        "utility": "c",
+        "inttypes.h": "c",
+        "stdlib.h": "c",
+        "sfmt.h": "c",
+        "imdefs.h": "c",
+        "imtdlib.h": "c",
+        "imrng.h": "c"
     }
 }
