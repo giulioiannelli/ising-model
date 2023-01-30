@@ -160,14 +160,14 @@ extern sysz_t updMC(double T, sysz_t N, lttc_t *s, nnl_t *nn)
     }
     return acc;
 }
-extern void updWO(double T, sysz_t N, lttc_t *s, nnl_t *nn)
-{
-{
-   int j, nn[Z];
+// extern void updWO(double T, sysz_t N, lttc_t *s, nnl_t *nn)
+// {
+// {
+//    int j, nn[Z];
 
-   s[i] = - s0;                    /* flip the spin immediately */
-   neighbor(i, nn);                /* find nearest neighbor of i */
-   for(j = 0; j < Z; ++j)          /* flip the neighbor if ...  */
-      if(s0 == s[nn[j]] && drand48() < p)
-         flip(nn[j], s0);
-}
+//    s[i] = - s0;                    /* flip the spin immediately */
+//    neighbor(i, nn);                /* find nearest neighbor of i */
+//    for(j = 0; j < Z; ++j)          /* flip the neighbor if ...  */
+//       if(s0 == s[nn[j]] && drand48() < p)
+//          flip(nn[j], s0);
+// }

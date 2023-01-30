@@ -11,18 +11,22 @@ Please feel free to use and modify this, but keep the above information. Thanks!
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import animation
+from matplotlib.colors import ListedColormap
+
+
+cmap = ListedColormap(["k", "w"])
 
 # First set up the figure, the axis, and the plot element we want to animate
 fig, ax = plt.subplots()
 
-Lx = 64
-Ly = 64
+Lx = 1000
+Ly = 1000
 N = Lx*Ly
-T = 2.5
+T = 2.3
 
 a=[np.fromfile(f"res/N={N}/cfg_Lx={Lx:d}_Ly={Ly:d}_T={T:.2f}_t={t:d}.bin", dtype=np.int8).reshape(Lx, Ly)
-    for t in range(0, 10*(Lx*Ly), Lx)]
-im=plt.imshow(a[0],interpolation='none')
+    for t in range(0, 10000, 100)]
+im=plt.imshow(a[0],interpolation='none', cmap=cmap)
 # initialization function: plot the background of each frame
 def init():
     im.set_data(a[0])
@@ -36,7 +40,7 @@ def animate(i):
 
 # call the animator.  blit=True means only re-draw the parts that have changed.
 anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=400, interval=60, blit=True)
+                               frames=100, interval=60, blit=True)
 
 # save the animation as an mp4.  This requires ffmpeg or mencoder to be
 # installed.  The extra_args ensure that the x264 codec is used, so that

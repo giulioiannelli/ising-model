@@ -31,8 +31,7 @@ int main(int argc, char *argv[])
     sysz_t N;
     lttc_t *s;
     nnl_t *nn;
-    // uint32_t tmpu32;
-    double tmpdbl;
+    double tmpdbl = 0.;
     //
     seed_rand = (uint32_t [LENSRND]) {SEED, SIID, LSEED, RSEED};
     sfmt_init_by_array(&sfmt, seed_rand, LENSRND);
@@ -50,11 +49,11 @@ int main(int argc, char *argv[])
     mkdir(buf, ACCESSPERMS);
     //
     compute_nnarr(Lx, Ly, nn);
-    for (sysz_t t = 0; t < TMCMC; t++)
+    for (sysz_t t = 0; t < 10000; t++)
     {
         printf("\rt = %d", t);
-        tmpdbl = updMC(T, N, s, nn);
-        if (!(t % Lx))
+        tmpdbl += updMC(T, N, s, nn);
+        if (!(t % 100))
         {
             sprintf(buf, "res/N=%" PRIu32 "/cfg_Lx=%" PRIu32 "_Ly=%" PRIu32 "_T=%.2lf_t=%" PRIu32".bin", N, Lx, Ly, T, t);
             fp = fopen(buf, "wb");
