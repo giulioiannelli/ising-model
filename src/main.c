@@ -7,20 +7,24 @@
 #include <inttypes.h>
 #include <time.h>
 #include <SFMT.h>
-#include "imdefs.h"
-#include "imtdlib.h"
-#include "imfnlib.h"
-#include "imrng.h"
+#include <imdefs.h>
+#include <imtdlib.h>
+#include <imfnlib.h>
+#include <imrng.h>
 
 #define TMCMC (10 * N)
 
+char buf[512];
 sfmt_t sfmt;
 uint32_t *seed_rand;
 
-char buf[512];
-
 int main(int argc, char *argv[])
 {
+    if (argc != 3 + 1)
+    {
+        printf("ERROR");
+        exit(EXIT_FAILURE);
+    }
     FILE *fp;
     double T;
     side_t Lx, Ly;
@@ -46,12 +50,9 @@ int main(int argc, char *argv[])
     mkdir(buf, ACCESSPERMS);
     //
     compute_nnarr(Lx, Ly, nn);
-    tmpdbl = updMC(T, N, s, nn);
-    // printf("magn = %lf\n", m(N, s)/N);
     for (sysz_t t = 0; t < TMCMC; t++)
     {
-        // printf("t = %d", t);
-        // fflush(stdout);
+        printf("\rt = %d", t);
         tmpdbl = updMC(T, N, s, nn);
         if (!(t % Lx))
         {
@@ -59,9 +60,9 @@ int main(int argc, char *argv[])
             fp = fopen(buf, "wb");
             fwritecfg(&fp, N, s);
             fclose(fp);
-            printf("acc = %lf, magn = %lf\n", tmpdbl/N, m(N, s)/N);
         }
     }
+    printf("\n");
     
     free(s);
     free(nn);

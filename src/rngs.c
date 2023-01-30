@@ -1,5 +1,5 @@
 #include <SFMT.h>
-#include "imrng.h"
+#include <imrng.h>
 
 /**
  * generate and return 64-bit pseudorandom number.

@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <math.h>
 #include <inttypes.h>
-#include "imdefs.h"
-#include "imtdlib.h"
-#include "imfnlib.h"
-#include "imrng.h"
+#include <imdefs.h>
+#include <imtdlib.h>
+#include <imfnlib.h>
+#include <imrng.h>
 /**
  * initialize the lattice with Rademacher variables, i.e. {-1, +1}
  * with p = 1/2
@@ -81,7 +81,7 @@ extern nnl_t compute_nn(sysz_t i, side_t Lx, side_t Ly)
     else
         nn.N = i + Lx * (Ly - 1);
     // south
-    if (i < Lx * (Ly - 1))
+    if (i < Lx * (side_t)(Ly - 1))
         nn.S = i + Lx;
     else
         nn.S = i % Lx;
@@ -129,12 +129,11 @@ extern double m(sysz_t N, lttc_t *s)
  * compute and return the variation in the energy of the system when spin at
  * site u flips
  * @param u updated site
- * @param N size of the lattice
  * @param s the lattice array
  * @param nn the nearest neighbors array
  * @return difference of enegry, if negative accept the proposed move
  */
-extern double dE(sysz_t u, sysz_t N, lttc_t *s, nnl_t nn)
+extern double dE(sysz_t u, lttc_t *s, nnl_t nn)
 {
     double dE, sum_nn;
     sum_nn = s[nn.N] + s[nn.S] + s[nn.W] + s[nn.E];
@@ -147,7 +146,7 @@ extern sysz_t updMC(double T, sysz_t N, lttc_t *s, nnl_t *nn)
     double dEtmp;
     for (sysz_t u = 0; u < N; u++)
     {
-        dEtmp = dE(u, N, s, nn[u]);
+        dEtmp = dE(u, s, nn[u]);
         if (dEtmp <= 0)
         {
             s[u] = -s[u];
@@ -160,4 +159,15 @@ extern sysz_t updMC(double T, sysz_t N, lttc_t *s, nnl_t *nn)
         }
     }
     return acc;
+}
+extern void updWO(double T, sysz_t N, lttc_t *s, nnl_t *nn)
+{
+{
+   int j, nn[Z];
+
+   s[i] = - s0;                    /* flip the spin immediately */
+   neighbor(i, nn);                /* find nearest neighbor of i */
+   for(j = 0; j < Z; ++j)          /* flip the neighbor if ...  */
+      if(s0 == s[nn[j]] && drand48() < p)
+         flip(nn[j], s0);
 }
