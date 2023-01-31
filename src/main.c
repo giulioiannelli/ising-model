@@ -25,16 +25,19 @@ FILE *f_log;
 
 int main(int argc, char *argv[])
 {
-    /* open log file */
+    /*///////////////////////////////////////////////////////// open log file */
     sprintf(buf, DIRlog "%s" _UMOD "%s" _UCFG "%s" EXTLOG,
             PROGN, argv[1]+2, argv[2]+18);
     __MAKElog(argc, PROGN, argv);
-    /* check correct number of argument is parsed */
+    /*//////////////////////////// check correct number of argument is parsed */
     __CHECKargc(argc, NARG);
+    /*////////////////////////////////////// seed the random number generator */
+    __setSFMT_seed_rand();
     /* execute program according to mode */
     if (strcmp(argv[1], "--gen_config") == 0)
         __gen_config_varbeta(argv[2]);
-        
+    else if (strcmp(argv[1], "--gen_config") == 0)
+        __gen_config_varbeta(argv[2]);
     // else if (strcmp(argv[1], "--measure") == 0)
     //     measure(argv[2]);
     // else

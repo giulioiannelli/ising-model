@@ -75,6 +75,7 @@
 #define DIRcfg DIRres "config_files/"
 #define DIRlog DIRres "log/"
 #define DIRvbc DIRres "varbeta_isingcfg/"
+#define DIRobs DIRres "obs/"
 /**/
 
 
@@ -120,6 +121,7 @@
 #define J 1.                /* coupling strenght*/
 #define TWO 2               /* number two */
 #define LENSRND 4           /* seed array for sfmt length */
+#define MAX_tMCMC 10        /**/
 
 extern char buf[1024];
 

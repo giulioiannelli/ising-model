@@ -14,7 +14,8 @@
         "imdefs.h": "c",
         "imtdlib.h": "c",
         "imrng.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "random": "c"
     },
     "cmake.configureOnOpen": true
 }
