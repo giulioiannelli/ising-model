@@ -2,7 +2,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <SFMT.h>
-#include "imdefs.h"
+#include <imdefs.h>
 
 #ifndef __IMRNG_H_INC__
 #define __IMRNG_H_INC__
@@ -20,5 +20,7 @@ extern double SFMTrng_dbl(void);
 
 extern sfmt_t sfmt;
 extern uint32_t *seed_rand;
+
+extern void __setSFMT_seed_rand(void);
 
 #endif /* __IMRNG_H_INC__ */

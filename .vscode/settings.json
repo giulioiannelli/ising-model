@@ -13,6 +13,8 @@
         "sfmt.h": "c",
         "imdefs.h": "c",
         "imtdlib.h": "c",
-        "imrng.h": "c"
-    }
+        "imrng.h": "c",
+        "stdbool.h": "c"
+    },
+    "cmake.configureOnOpen": true
 }

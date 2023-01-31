@@ -19,22 +19,40 @@ cmap = ListedColormap(["k", "w"])
 # First set up the figure, the axis, and the plot element we want to animate
 fig, ax = plt.subplots()
 
-Lx = 1000
-Ly = 1000
-N = Lx*Ly
-T = 2.3
+pathtoconfig = "res/config_files/.config_100x100_test_savemany"
+with open(pathtoconfig) as f:
+    lines = f.readlines()
 
-a=[np.fromfile(f"res/N={N}/cfg_Lx={Lx:d}_Ly={Ly:d}_T={T:.2f}_t={t:d}.bin", dtype=np.int8).reshape(Lx, Ly)
-    for t in range(0, 10000, 100)]
-im=plt.imshow(a[0],interpolation='none', cmap=cmap)
+tMCMC, L1, L2, beta_m, beta_M, beta_stp, MODE_save = int(lines[0]),\
+    int(lines[1]), int(lines[2]), float(lines[3]), float(lines[4]),\
+    float(lines[5]), int(lines[-1])
+MODE_init = lines[6]
+MODE_upd = lines[7]
+print("tMCMC: ", tMCMC, "\nL1: ", L1, "\nL2: ", L2, "\nbeta_m: ", beta_m, 
+    "\nbeta_M: ", beta_M, "\nbeta_stp: ", beta_stp, 
+    "\nMODE_init: ", MODE_init[:-1], "\nMODE_upd: ", MODE_upd[:-1], "\nMODE_save: ", MODE_save)
+
+sizepath = f"N={L1*L2:d}" if L1 == L2 else f"L1={L1:d}_L2={L2:d}"
+betaval = np.arange(beta_m, beta_M, beta_stp)
+if MODE_save == tMCMC:
+    tlist = [0, tMCMC]
+else:
+    tlist = [x for x in range(MODE_save, tMCMC+1, tMCMC//MODE_save)]
+pathtoconfig = [f"res/varbeta_isingcfg/{sizepath}/beta={b:.3g}/SCONF_t={t:d}.bin"
+    for b in betaval for t in tlist]
+
+config = [np.fromfile(pth, dtype=np.int8).reshape(L1, L2) for pth in pathtoconfig]
+
+
+im=plt.imshow(config[0],interpolation='none', cmap=cmap)
 # initialization function: plot the background of each frame
 def init():
-    im.set_data(a[0])
+    im.set_data(config[0])
     return [im]
 
 # animation function.  This is called sequentially
 def animate(i):
-    tmp = a[i]    
+    tmp = config[i]    
     im.set_array(tmp)
     return [im]
 

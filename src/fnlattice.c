@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <sys/stat.h>
+#include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <inttypes.h>
 #include <imdefs.h>
 #include <imtdlib.h>
@@ -12,25 +15,38 @@
  * @param s the lattice array
  * @return none
  */
-extern void inits_randu(sysz_t N, lttc_t *s)
+extern void __init_hotstart_uniform(sysz_t N, lttc_t *s)
 {
     for (sysz_t i = 0; i < N; i++)
         s[i] = TWO * (RNG_u64() % TWO) - 1;
 }
 /**
- * print the lattice on the screen
+ * initialize the lattice with a cold start, i.e. all the spins equal to +1 (-1)
+ * with p = 1/2
  * @param N size of the lattice
- * @param Lx horizontal side size of the lattice
  * @param s the lattice array
  * @return none
  */
-extern void printcfg(sysz_t N, side_t Lx, lttc_t *s)
+extern void __init_coldstart(sysz_t N, lttc_t *s)
+{
+    s[0] = TWO * (RNG_u64() % TWO) - 1;
+    for (sysz_t i = 1; i < N; i++)
+        s[i] = s[0];
+}
+/**
+ * print the lattice on the screen
+ * @param N size of the lattice
+ * @param L1 horizontal side size of the lattice
+ * @param s the lattice array
+ * @return none
+ */
+extern void printcfg(sysz_t N, side_t L1, lttc_t *s)
 {
     for (sysz_t i = 0; i < N; i++)
     {
         // printf("%+" PRIi8 " ", s[i]);
-        printf("%" PRIi8 " ", (s[i]+1)/2);
-        if (!((i + 1) % Lx))
+        printf("%" PRIi8 " ", (s[i] + 1) / 2);
+        if (!((i + 1) % L1))
             printf("\n");
     }
 }
@@ -38,17 +54,17 @@ extern void printcfg(sysz_t N, side_t Lx, lttc_t *s)
  * print on file the lattice on the screen
  * @param f fle onto which to print
  * @param N size of the lattice
- * @param Lx horizontal side size of the lattice
+ * @param L1 horizontal side size of the lattice
  * @param s the lattice array
  * @return none
  */
-extern void fprintcfg(FILE **f, sysz_t N, side_t Lx, lttc_t *s)
+extern void fprintcfg(FILE **f, sysz_t N, side_t L1, lttc_t *s)
 {
     for (sysz_t i = 0; i < N; i++)
     {
         // printf("%+" PRIi8 " ", s[i]);
-        fprintf(*f, "%" PRIi8 " ", (s[i]+1)/2);
-        if (!((i + 1) % Lx))
+        fprintf(*f, "%" PRIi8 " ", (s[i] + 1) / 2);
+        if (!((i + 1) % L1))
             fprintf(*f, "\n");
     }
 }
@@ -66,50 +82,50 @@ extern void fwritecfg(FILE **f, sysz_t N, lttc_t *s)
 
 /**
  * compute the nearest neighbor given a specific site of the lattice
- * @param Lx horizontal side size of the lattice
- * @param Ly vertical side size of the lattice
+ * @param L1 horizontal side size of the lattice
+ * @param L2 vertical side size of the lattice
  * @param s the lattice site
  * @param nn the nearest neighbor array
  * @return none
  */
-extern nnl_t compute_nn(sysz_t i, side_t Lx, side_t Ly)
+extern nnl_t compute_nn(sysz_t i, side_t L1, side_t L2)
 {
     nnl_t nn;
     // north
-    if (i > Lx)
-        nn.N = i - Lx;
+    if (i > L1)
+        nn.N = i - L1;
     else
-        nn.N = i + Lx * (Ly - 1);
+        nn.N = i + L1 * (L2 - 1);
     // south
-    if (i < Lx * (side_t)(Ly - 1))
-        nn.S = i + Lx;
+    if (i < L1 * (side_t)(L2 - 1))
+        nn.S = i + L1;
     else
-        nn.S = i % Lx;
+        nn.S = i % L1;
     // west
-    if (i % Lx)
+    if (i % L1)
         nn.W = i - 1;
     else
-        nn.W = i + (Lx - 1);
+        nn.W = i + (L1 - 1);
     // east
-    if ((+1) % Lx)
+    if ((+1) % L1)
         nn.E = i + 1;
     else
-        nn.E = i - (Lx - 1);
+        nn.E = i - (L1 - 1);
     return nn;
 }
 /**
  * compute the nearest neighbor array
- * @param Lx horizontal side size of the lattice
- * @param Ly vertical side size of the lattice
+ * @param L1 horizontal side size of the lattice
+ * @param L2 vertical side size of the lattice
  * @param nn the nearest neighbors array
  * @return none
  */
-extern void compute_nnarr(side_t Lx, side_t Ly, nnl_t *nn)
+extern void compute_nnarr(side_t L1, side_t L2, nnl_t *nn)
 {
-    sysz_t N = Lx * Ly;
+    sysz_t N = L1 * L2;
     for (sysz_t i = 0; i < N; i++)
     {
-        nn[i] = compute_nn(i, Lx, Ly);
+        nn[i] = compute_nn(i, L1, L2);
     }
 }
 /**
@@ -140,34 +156,124 @@ extern double dE(sysz_t u, lttc_t *s, nnl_t nn)
     dE = 2 * J * s[u] * sum_nn;
     return dE;
 }
-extern sysz_t updMC(double T, sysz_t N, lttc_t *s, nnl_t *nn)
+extern void updME(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
 {
-    sysz_t acc = 0;
     double dEtmp;
     for (sysz_t u = 0; u < N; u++)
     {
         dEtmp = dE(u, s, nn[u]);
         if (dEtmp <= 0)
-        {
             s[u] = -s[u];
-            acc++;
-        }
-        else if (exp(-dEtmp / T) > RNG_dbl())
-        {
+        else if (exp(-dEtmp * beta) > RNG_dbl())
             s[u] = -s[u];
-            acc++;
-        }
     }
-    return acc;
 }
 // extern void updWO(double T, sysz_t N, lttc_t *s, nnl_t *nn)
 // {
-// {
-//    int j, nn[Z];
+//     //    int j, nn[Z];
 
-//    s[i] = - s0;                    /* flip the spin immediately */
-//    neighbor(i, nn);                /* find nearest neighbor of i */
-//    for(j = 0; j < Z; ++j)          /* flip the neighbor if ...  */
-//       if(s0 == s[nn[j]] && drand48() < p)
-//          flip(nn[j], s0);
+//     //    s[i] = - s0;                    /* flip the spin immediateL2 */
+//     //    neighbor(i, nn);                /* find nearest neighbor of i */
+//     //    for(j = 0; j < Z; ++j)          /* flip the neighbor if ...  */
+//     //       if(s0 == s[nn[j]] && RNG_dbl() < p)
+//     //          flip(nn[j], s0);
 // }
+/**
+ * ...
+ * @param config_fn configuration file name
+ * @return difference of enegry, if negative accept the proposed move
+ */
+extern dtc_t __fscanf_configfile(char *config_fn)
+{
+    FILE *fconf;
+    dtc_t dtc;
+    F_OPEN(&fconf, config_fn, "r+");
+    fscanf(fconf, "%" SCNu64, &dtc.tMCMC);
+    fscanf(fconf, "%" SCNu16, &dtc.L1);
+    fscanf(fconf, "%" SCNu16, &dtc.L2);
+    fscanf(fconf, "%lf", &dtc.beta_m);
+    fscanf(fconf, "%lf", &dtc.beta_M);
+    fscanf(fconf, "%lf", &dtc.beta_stp);
+    fscanf(fconf, "%s", dtc.MODE_init);
+    fscanf(fconf, "%s", dtc.MODE_upd);
+    fscanf(fconf, "%" SCNu64, &dtc.MODE_save);
+    fclose(fconf);
+    return dtc;
+}
+/**
+ * generate Ising 2D lattice configuration(s) following instructions provided in
+ * configuration file specified by string config_fn
+ * @param config_fn configuration file name
+ * @return difference of enegry, if negative accept the proposed move
+ */
+extern void __gen_config_varbeta(char *config_fn)
+{
+    FILE *fout;
+    char dirsave[256], dirsave2[512];
+    uint64_t save_time;
+    side_t L1, L2;
+    sysz_t N;
+    lttc_t *s;
+    nnl_t *nn;
+    dtc_t dtc;
+    void (*__init__)(), (*__upd__)();
+    /*////////////////////////////////////// seed the random number generator */
+    __setSFMT_seed_rand();
+    /*///////////////////////////////////////////// open and read config_file */
+    dtc = __fscanf_configfile(config_fn);
+    /*//////////////////////////////////////////////////// allocate variables */
+    L1 = dtc.L1;
+    L2 = dtc.L2;
+    N = (L1 * L2);
+    s = malloc(sizeof(*s) * N);
+    challoc(s);
+    nn = malloc(sizeof(*nn) * N);
+    challoc(nn);
+    compute_nnarr(L1, L2, nn);
+    /*///////////////////////////////////////////// create folder for results */
+    if (L1 == L2)
+        sprintf(dirsave, DIRvbc "N=%" PRIu32 _S, N);
+    else
+        sprintf(dirsave, DIRvbc "L1=%" PRIu16 _U "L2=%" PRIu16 _S, L1, L2);
+    mkdir(dirsave, ACCESSPERMS);
+    /*///////////////////////////////////////////////////////// set init mode */
+    if (strcmp(dtc.MODE_init, "hs_unif") == 0)
+        __init__ = __init_hotstart_uniform;
+    else if (strcmp(dtc.MODE_init, "cs_unif") == 0)
+        __init__ = __init_coldstart;
+    else
+        __init__ = NULL;
+    __init__(N, s);
+    /*///////////////////////////////// set update mode (wolff or metropolis) */
+    if (strcmp(dtc.MODE_upd, "algo_metro") == 0)
+        __upd__ = updME;
+    else //if (strcmp(dtc.MODE_init, "algo_wolff") == 0)
+        __upd__ = NULL;
+    /*///////////////////////////////////////////////////////// set save mode */
+    if (dtc.MODE_save)
+        save_time = dtc.MODE_save;
+    else
+        save_time = dtc.tMCMC;
+    /*///////////////////////////////////////////////////////// set save mode */
+    for (double b = dtc.beta_m; b < dtc.beta_M; b += dtc.beta_stp)
+    {
+        sprintf(dirsave2, "%sbeta=" STR_FMT_b _S, dirsave, b);
+        mkdir(dirsave2, ACCESSPERMS);
+        __init__(N, s);
+        for (sysz_t t = 1; t < dtc.tMCMC + 1; t++)
+        {
+            printf("\rt = %d", t);
+            __upd__(b, N, s, nn);
+            if (!(t % save_time))
+            {
+                sprintf(buf, "%sSCONF_t=%" PRIu32 EXTBIN, dirsave2, t);
+                F_OPEN(&fout, buf, "wb");
+                fwritecfg(&fout, N, s);
+                fclose(fout);
+            }
+        }
+        printf("\n");
+    }
+    free(s);
+    free(nn);
+}

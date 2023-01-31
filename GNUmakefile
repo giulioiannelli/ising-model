@@ -2,7 +2,7 @@
 
 PATH_SRC  = src/
 PATH_SFMT = dep/SFMT/
-srcFILES.c = main.c rngs.c fnlattice.c 
+srcFILES.c = main.c rngs.c fnlattice.c generic.c
 SFMTFILES.c = SFMT.c
 FILES.c = ${srcFILES.c} ${SFMTFILES.c}
 FILES.o = ${FILES.c:.c=.o}
