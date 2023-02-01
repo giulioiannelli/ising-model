@@ -7,7 +7,7 @@
 #include <imrng.h>
 
 
-void challoc(void *__ptr)
+void __challoc(void *__ptr)
 {
     if (__ptr == NULL)
     {
@@ -45,7 +45,7 @@ extern bool F_NEXIST(const char *n)
  * @param md the mode
  * @return (void) none
  */
-extern void F_OPEN(FILE **f, const char *fn, const char *md)
+extern void __F_OPEN(FILE **f, const char *fn, const char *md)
 {
     if ((*f = fopen(fn, md)) == NULL)
     {

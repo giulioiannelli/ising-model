@@ -15,7 +15,9 @@
         "imtdlib.h": "c",
         "imrng.h": "c",
         "stdbool.h": "c",
-        "random": "c"
+        "random": "c",
+        "*.tcc": "c",
+        "cmath": "c"
     },
     "cmake.configureOnOpen": true
 }

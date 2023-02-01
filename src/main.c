@@ -34,10 +34,14 @@ int main(int argc, char *argv[])
     /*////////////////////////////////////// seed the random number generator */
     __setSFMT_seed_rand();
     /* execute program according to mode */
-    if (strcmp(argv[1], "--gen_config") == 0)
-        __gen_config_varbeta(argv[2]);
-    else if (strcmp(argv[1], "--gen_config") == 0)
-        __gen_config_varbeta(argv[2]);
+    if (strcmp(argv[1], "--acf") == 0)
+        __compute_ACF(argv[2]);
+    
+}
+
+    // else if (strcmp(argv[1], "--gen_config") == 0){
+    //     d = __fscanf_configfile(argv[2]);
+    //     __gen_config_(d);}
     // else if (strcmp(argv[1], "--measure") == 0)
     //     measure(argv[2]);
     // else
@@ -69,7 +73,7 @@ int main(int argc, char *argv[])
     // sprintf(buf, "res/N=%" PRIu32 "/", N);
     // mkdir(buf, ACCESSPERMS);
     // //
-    // compute_nnarr(Lx, Ly, nn);
+    // compute_nn_array(Lx, Ly, nn);
     // for (sysz_t t = 0; t < TMCMC; t++)
     // {
     //     printf("\rt = %d", t);
@@ -86,4 +90,3 @@ int main(int argc, char *argv[])
 
     // free(s);
     // free(nn);
-}

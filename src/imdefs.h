@@ -14,6 +14,7 @@
 /**/
 #define __ " "
 #define _C ","
+#define _E "="
 #define _H "-"
 #define _N "\n"
 #define _S "/"
@@ -79,10 +80,26 @@
 /**/
 
 
-#define STR_FMT_b "%.3g"
-#define STR_FMT_L "%" PRIu16
+#define STR_bt "bt"
+#define STR_N  "N"
+#define STR_L1 "L1"
+#define STR_L2 "L2"
 
+#define STR_FMT_bt "%.3g"
+#define STR_FMT_L  "%" PRIu16
+#define STR_FMT_N  "%" PRIu32
 
+#define __L1IS STR_L1 _E                                             /* "L1=" */
+#define __L2IS STR_L2 _E                                             /* "L2=" */
+#define __NIS  STR_N  _E                                             /* "N="  */
+#define __BTIS STR_bt _E                                             /* "bt=" */
+
+#define __L1IS__ __L1IS STR_FMT_L
+#define __L2IS__ __L2IS STR_FMT_L
+#define __BTIS__ __BTIS STR_FMT_bt
+#define __NIS__  __NIS  STR_FMT_N
+
+#define __L1IS_L2IS__ __L1IS__ _U __L2IS__
 
 
 
@@ -123,6 +140,18 @@
 #define LENSRND 4           /* seed array for sfmt length */
 #define MAX_tMCMC 10        /**/
 
+#define PRIconfSIGNED(x) printf("%+" PRIi8 " ", x);
+#define PRIconfUNSGND(x) printf("%"  PRIi8 " ", (x + 1) / 2);
+
+#define FPRIconfSIGNED(x,f) fprintf(f, "%+" PRIi8 " ", x);
+#define FPRIconfUNSGND(x,f) fprintf(f, "%"  PRIi8 " ", (x + 1) / 2);
+
+#define PRIconf PRIconfUNSGND
+#define FPRIconf FPRIconfUNSGND
+
+extern FILE *f_log;
 extern char buf[1024];
+
+
 
 #endif /* __IMDEFS_H_INC__ */

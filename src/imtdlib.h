@@ -1,5 +1,6 @@
 /* CHECKED */
 #include <inttypes.h>
+#include <stdbool.h>
 
 #ifndef __IMDTLIB_H_INC__
 #define __IMDTLIB_H_INC__
@@ -7,7 +8,11 @@
 typedef int8_t lttc_t;
 typedef uint16_t side_t;
 typedef uint32_t sysz_t;
-typedef struct nearestneigh
+typedef struct observables
+{
+    double *magn;
+} obs_t;
+typedef struct nearest_neigh_on_lattice
 {
     uint32_t N;
     uint32_t S;
@@ -16,27 +21,30 @@ typedef struct nearestneigh
 } nnl_t;
 typedef struct config_one
 {
-    bool MODE_measure;
-    char MODE_init[128], MODE_upd[128];
-    double beta;
-    sysz_t tMCMC, MODE_save;
-    side_t L1, L2;
-} dtc1_t;
+    bool _m_mea;
+    side_t L1;
+    side_t L2;
+    sysz_t tMC;
+    sysz_t _m_sav;
+    double b;
+    char _m_init[128];
+    char _m_upd[128];
+} smdtc_t;
 typedef struct data_config
 {
-    bool MODE_measure;
-    char MODE_init[128], MODE_upd[128];
-    double beta_m, beta_M, beta_stp;
-    uint16_t NAVG;
-    sysz_t N_M, tMCMC, MODE_save;
-    side_t L1, L2, Ls;
+    sysz_t tMC;
+    sysz_t N_M;
+    sysz_t _m_sav;
+    uint16_t Navg;
+    side_t L1;
+    side_t L2;
+    side_t Ls;
+    double b_m;
+    double b_M;
+    double b_s;
+    char _m_init[128];
+    char _m_upd[128];
+    bool _m_mea;
 } dtc_t;
-
-typedef struct observables
-{
-    double *magn;
-} obs_t;
-
-extern FILE *f_log;
 
 #endif  /* __IMDTLIB_H_INC__ */
