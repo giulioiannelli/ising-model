@@ -108,27 +108,88 @@ extern void __fwrite_ACF(char *fn, uint16_t na, sysz_t tMC, double *acf)
  */
 extern void __fscanf_configfile(dtc_t *d, char *config_fn)
 {
+    // FILE *fconf;
+    // int _mdmea;
+    // __F_OPEN(&fconf, config_fn, "r+");
+    // if (fscanf(fconf, "%" SCNu32 "%" SCNu32 "%" SCNu32,
+    //            &d->tMC, &d->N_M, &d->_m_sav) != 3)
+    //     printf("Error in config file\n");
+    // if (fscanf(fconf, "%" SCNu16 "%" SCNu16 "%" SCNu16 "%" SCNu16,
+    //            &d->Navg, &d->L1, &d->L2, &d->Ls) != 4)
+    //     printf("Error in config file\n");
+    // if (fscanf(fconf, "%lf%lf%lf", &d->b_m, &d->b_M, &d->b_s) != 3)
+    //     printf("Error in config file\n");
+    // if (fscanf(fconf, "%s", d->_m_init) != 1)
+    //     printf("Error in config file\n");
+    // if (fscanf(fconf, "%s", d->_m_upd) != 1)
+    //     printf("Error in config file\n");
+    // if (fscanf(fconf, "%d", &_mdmea) != 1)
+    //     printf("Error in config file\n");
+    // else
+    //     d->_m_mea = _mdmea;
+    // fclose(fconf);
     FILE *fconf;
-    int _mdmea;
+    char row[1024];
+    char *tok, *endptr;
     __F_OPEN(&fconf, config_fn, "r+");
-    if (fscanf(fconf, "%" SCNu32 "%" SCNu32 "%" SCNu32,
-               &d->tMC, &d->N_M, &d->_m_sav) != 3)
-        printf("Error in config file\n");
-    if (fscanf(fconf, "%" SCNu16 "%" SCNu16 "%" SCNu16 "%" SCNu16,
-               &d->Navg, &d->L1, &d->L2, &d->Ls) != 4)
-        printf("Error in config file\n");
-    if (fscanf(fconf, "%lf%lf%lf", &d->b_m, &d->b_M, &d->b_s) != 3)
-        printf("Error in config file\n");
-    if (fscanf(fconf, "%s", d->_m_init) != 1)
-        printf("Error in config file\n");
-    if (fscanf(fconf, "%s", d->_m_upd) != 1)
-        printf("Error in config file\n");
-    if (fscanf(fconf, "%d", &_mdmea) != 1)
-        printf("Error in config file\n");
-    else
-        d->_m_mea = _mdmea;
+    fgets(row, 1024, fconf);
+    fgets(row, 1024, fconf);
+    tok = strtok(row, ",");
+    d->tMC = strtou32(tok);
+    tok = strtok(NULL, ",");
+    d->N_M = strtou32(tok);
+    tok = strtok(NULL, ",");
+    d->_m_sav = strtou32(tok);
+    tok = strtok(NULL, ",");
+    d->Navg = strtou16(tok);
+    tok = strtok(NULL, ",");
+    d->L1 = strtou16(tok);
+    tok = strtok(NULL, ",");
+    d->L2 = strtou16(tok);
+    tok = strtok(NULL, ",");
+    d->Ls = strtou16(tok);
+    tok = strtok(NULL, ",");
+    d->b_m = strtod(tok, &endptr);
+    tok = strtok(NULL, ",");
+    d->b_M = strtod(tok, &endptr);
+    tok = strtok(NULL, ",");
+    d->b_s = strtod(tok, &endptr);
+    tok = strtok(NULL, ",");
+    strcpy(d->_m_init, tok);
+    tok = strtok(NULL, ",");
+    strcpy(d->_m_upd, tok);
+    tok = strtok(NULL, ",");
+    d->_m_mea = (int) strtol(tok, (char **)NULL, 10);
     fclose(fconf);
 }
+extern void __printf_configfile(dtc_t d, char *config_fn)
+{
+    __fscanf_configfile(&d, config_fn);
+    printf(_V _LARW __ "CONFIGURATION FILE CONTENTS" _N);
+    printf(_T "tMC" _T "%" SCNu32"\n", d.tMC);
+    printf(_T "N_M\t%" SCNu32"\n", d.N_M);
+    printf(_T "_m_sav\t%" SCNu32"\n", d._m_sav);
+    printf(_T "Navg\t%" SCNu16"\n", d.Navg);
+    printf(_T "L1\t%" SCNu16"\n", d.L1);
+    printf(_T "L2\t%" SCNu16"\n", d.L2);
+    printf(_T "Ls\t%" SCNu16"\n", d.Ls);
+    printf(_T "b_m\t%lf\n", d.b_m);
+    printf(_T "b_M\t%lf\n", d.b_M);
+    printf(_T "b_s\t%lf\n", d.b_s);
+    printf(_T "_m_init\t%s\n", d._m_init);
+    printf(_T "_m_upd\t%s\n", d._m_upd);
+    printf(_T "_m_mea\t%d\n", d._m_mea);
+}
+extern void __print_configf(char *config_fn, const char *mode)
+{
+    dtc_t d;
+    __fscanf_configfile(&d, config_fn);
+    if (strcmp(mode, "stoutprint") == 0)
+        __printf_configfile(d, config_fn);
+    // else if (strcmp(mode, "fileprint") == 0)
+    //     __fprintflog_configfile(&d, config_fn);
+}
+
 /**
  * ...
  * @param

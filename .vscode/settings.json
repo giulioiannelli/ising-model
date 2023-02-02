@@ -17,7 +17,8 @@
         "stdbool.h": "c",
         "random": "c",
         "*.tcc": "c",
-        "cmath": "c"
+        "cmath": "c",
+        "imfnlib.h": "c"
     },
     "cmake.configureOnOpen": true
 }

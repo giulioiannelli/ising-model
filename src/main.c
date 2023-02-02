@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/stat.h>
 #include <inttypes.h>
 #include <time.h>
@@ -14,7 +15,6 @@
 #include <imfnlib.h>
 #include <imrng.h>
 
-#define TMCMC (10 * N)
 #define NARG 2
 #define PROGN "ising-model-c"
 
@@ -22,18 +22,20 @@ char buf[1024];
 sfmt_t sfmt;
 uint32_t *seed_rand;
 FILE *f_log;
-
+    
 int main(int argc, char *argv[])
 {
     /*///////////////////////////////////////////////////////// open log file */
     sprintf(buf, DIRlog "%s" _UMOD "%s" _UCFG "%s" EXTLOG,
-            PROGN, argv[1]+2, argv[2]+18);
+            PROGN, argv[1]+2, argv[2]+strlen(DIRcfg)+1);
     __MAKElog(argc, PROGN, argv);
     /*//////////////////////////// check correct number of argument is parsed */
     __CHECKargc(argc, NARG);
     /*////////////////////////////////////// seed the random number generator */
     __setSFMT_seed_rand();
     /* execute program according to mode */
+    if (strcmp(argv[1], "--print_config") == 0)
+        __print_configf(argv[2], "stoutprint");
     if (strcmp(argv[1], "--acf") == 0)
         __compute_ACF(argv[2]);
     fclose(f_log);

@@ -73,7 +73,7 @@
 #define DIRtoo "tools/"
 /**/
 #define DIRanm DIRres "animated/"
-#define DIRcfg DIRres "config_files/"
+#define DIRcfg DIRres "config/"
 #define DIRlog DIRres "log/"
 #define DIRvbc DIRres "vbc/"
 #define DIRobs DIRres "obs/"

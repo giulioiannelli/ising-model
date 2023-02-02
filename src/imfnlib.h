@@ -4,6 +4,9 @@
 #ifndef __IMFNLIB_H_INC__
 #define __IMFNLIB_H_INC__
 
+uint16_t strtou16(const char *s);
+uint32_t strtou32(const char *s);
+
 extern bool F_EEXIST(const char *);
 extern bool F_NEXIST(const char *);
 extern void __F_OPEN(FILE **, const char *, const char *);
@@ -19,6 +22,9 @@ extern void __fprint_CONFIG(char *fn, sysz_t N, side_t L1, lttc_t *s);
 extern void __fwrite_CONFIG(char *fn, sysz_t t, sysz_t N, lttc_t *s);
 extern void __fwrite_ACF(char *fn, uint16_t na, sysz_t tMC, double *acf);
 extern void __fscanf_configfile(dtc_t *dtc, char *config_fn);
+extern void __printf_configfile(dtc_t d, char *config_fn);
+extern void __print_configf(char *config_fn, const char *mode);
+
 extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, sysz_t N);
 extern void __mkdir_syszb(char *_dirb, double beta, char*_dirsz);
 extern uint32_t countNsteps(dtc_t dtc);

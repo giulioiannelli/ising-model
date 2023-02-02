@@ -1,10 +1,57 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <errno.h>
 #include <imdefs.h>
 #include <imtdlib.h>
 #include <imfnlib.h>
 #include <imrng.h>
+
+
+uint16_t strtou16(const char *s) {
+    char c;
+    int scanned;
+    uint16_t i;
+    scanned = sscanf(s, "%" SCNd16 "%c", &i, &c);
+    if (scanned == 1)
+        return i;
+    else if (scanned > 1)
+    {
+        // TBD about extra data found
+        return i;
+    }
+    if (c != '\0' || errno != 0)
+    {
+        fprintf(f_log, MSGFAIL, PFCLU32, PIGOTIN"%s" MSGEXIT, c);
+        fclose(f_log);
+        exit(EXIT_FAILURE);
+    }
+    // TBD failed to scan;
+    return 0;
+}
+uint32_t strtou32(const char *s) {
+    char c;
+    int scanned;
+    uint32_t i;
+    scanned = sscanf(s, "%" SCNd32 "%c", &i, &c);
+    if (scanned == 1)
+        return i;
+    else if (scanned > 1)
+    {
+        // TBD about extra data found
+        return i;
+    }
+    if (c != '\0' || errno != 0)
+    {
+        fprintf(f_log, MSGFAIL, PFCLU32, PIGOTIN"%s" MSGEXIT, c);
+        fclose(f_log);
+        exit(EXIT_FAILURE);
+    }
+    return 0;
+}
+
+
+
 
 
 void __challoc(void *__ptr)
