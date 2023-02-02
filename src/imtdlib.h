@@ -7,6 +7,7 @@
 
 typedef int8_t lttc_t;
 typedef uint16_t side_t;
+typedef uint16_t avg_t;
 typedef uint32_t sysz_t;
 typedef struct observables
 {
@@ -35,7 +36,7 @@ typedef struct data_config
     sysz_t tMC;
     sysz_t N_M;
     sysz_t _m_sav;
-    uint16_t Navg;
+    avg_t Navg;
     side_t L1;
     side_t L2;
     side_t Ls;

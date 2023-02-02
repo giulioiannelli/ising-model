@@ -8,6 +8,14 @@
 #include <imrng.h>
 
 
+double avg(avg_t n, double *v)
+{
+    double s = 0.;
+    for (avg_t i = 0; i < n; i++) 
+        s += v[i];
+    return (s / n);
+}
+
 uint16_t strtou16(const char *s) {
     char c;
     int scanned;
@@ -22,7 +30,7 @@ uint16_t strtou16(const char *s) {
     }
     if (c != '\0' || errno != 0)
     {
-        fprintf(f_log, MSGFAIL, PFCLU32, PIGOTIN"%s" MSGEXIT, c);
+        fprintf(f_log, MSGFAIL PFCLU32 PIGOTIN "%c" MSGEXIT, c);
         fclose(f_log);
         exit(EXIT_FAILURE);
     }
@@ -43,16 +51,12 @@ uint32_t strtou32(const char *s) {
     }
     if (c != '\0' || errno != 0)
     {
-        fprintf(f_log, MSGFAIL, PFCLU32, PIGOTIN"%s" MSGEXIT, c);
+        fprintf(f_log, MSGFAIL PFCLU32 PIGOTIN "%c" MSGEXIT, c);
         fclose(f_log);
         exit(EXIT_FAILURE);
     }
     return 0;
 }
-
-
-
-
 
 void __challoc(void *__ptr)
 {

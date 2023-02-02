@@ -85,19 +85,20 @@
 #define STR_L1 "L1"
 #define STR_L2 "L2"
 
-#define STR_FMT_bt "%.3g"
-#define STR_FMT_L  "%" PRIu16
-#define STR_FMT_N  "%" PRIu32
+#define FMT_bt "%.3g"
+#define FMT_na "%" PRIu16
+#define FMT_L  "%" PRIu16
+#define FMT_N  "%" PRIu32
 
 #define __L1IS STR_L1 _E                                             /* "L1=" */
 #define __L2IS STR_L2 _E                                             /* "L2=" */
 #define __NIS  STR_N  _E                                             /* "N="  */
 #define __BTIS STR_bt _E                                             /* "bt=" */
 
-#define __L1IS__ __L1IS STR_FMT_L
-#define __L2IS__ __L2IS STR_FMT_L
-#define __BTIS__ __BTIS STR_FMT_bt
-#define __NIS__  __NIS  STR_FMT_N
+#define __L1IS__ __L1IS FMT_L
+#define __L2IS__ __L2IS FMT_L
+#define __BTIS__ __BTIS FMT_bt
+#define __NIS__  __NIS  FMT_N
 
 #define __L1IS_L2IS__ __L1IS__ _U __L2IS__
 

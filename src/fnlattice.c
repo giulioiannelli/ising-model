@@ -102,6 +102,16 @@ extern void __fwrite_ACF(char *fn, uint16_t na, sysz_t tMC, double *acf)
     fclose(fout);
 }
 /**
+ */
+extern void __fwrite_ti(char *fn, uint16_t na, sysz_t tMC, double ti)
+{
+    FILE *fout;
+    sprintf(buf, "%stauint_avg=" FMT_na EXTBIN, fn, na);
+    __F_OPEN(&fout, buf, "wb");
+    fwrite(&ti, sizeof(ti), 1, fout);
+    fclose(fout);
+}
+/**
  * acquire from config file the d struct with allthe settings for the program
  * @param config_fn (char *) configuration file name
  * @return (dtc_t) the struct with configurational settings
@@ -132,8 +142,14 @@ extern void __fscanf_configfile(dtc_t *d, char *config_fn)
     char row[1024];
     char *tok, *endptr;
     __F_OPEN(&fconf, config_fn, "r+");
-    fgets(row, 1024, fconf);
-    fgets(row, 1024, fconf);
+    if (fgets(row, 1024, fconf) == NULL)
+    {
+        ;
+    }
+    if (fgets(row, 1024, fconf) == NULL)
+    {
+        ;
+    }
     tok = strtok(row, ",");
     d->tMC = strtou32(tok);
     tok = strtok(NULL, ",");
@@ -161,6 +177,21 @@ extern void __fscanf_configfile(dtc_t *d, char *config_fn)
     tok = strtok(NULL, ",");
     d->_m_mea = (int) strtol(tok, (char **)NULL, 10);
     fclose(fconf);
+}
+extern void __set_localdtc(smdtc_t *d1, dtc_t *d)
+{
+    d1->tMC = d->tMC;
+    d1->_m_mea = d->_m_mea;
+    d1->_m_sav = d->_m_sav;
+    strcpy(d1->_m_init, d->_m_init);
+    strcpy(d1->_m_upd, d->_m_upd);
+}
+extern void __upd_localdtc(smdtc_t *d1, double b, side_t L1, side_t L2, sysz_t N)
+{           
+    d1->b = b;
+    d1->L1 = L1;
+    d1->L2 = L2;
+    d1->tMC *= N;
 }
 extern void __printf_configfile(dtc_t d, char *config_fn)
 {
@@ -397,7 +428,7 @@ extern double *ACFcomputation__(smdtc_t d1, obs_t O)
  * @param
  * @return
  */
-extern void __dont_measure(obs_t O)
+extern void __dont_measure(void)
 {
     ;
 }
@@ -500,24 +531,23 @@ extern void __compute_ACF(char *config_fn)
 {
     char _dirsz[256], _dirb[512];
     side_t L1, L2, Ls;
-    sysz_t N    ;
+    sysz_t N, t;
     uint32_t Ns;
-    double *ACFcorr, *ACFcorr_tmp;
+    double tauint;
+    double *ACFcorr, *ACFcorr_tmp, *ti;
     smdtc_t d1;
     dtc_t d;
     obs_t O;
     /*///////////////////////////////// open and read config_file + variables */
     __fscanf_configfile(&d, config_fn);
     Ns = countNsteps(d);
-    printf("Number of steps of the dynamics: %" PRIu32 "\n", Ns);
+    // printf("Number of steps of the dynamics: %" PRIu32 "\n", Ns);
     // betas = countbetasteps(d);
     L1 = d.L1;
     L2 = d.L2;
     Ls = d.Ls;
     N = (L1 * L2);
-    d1._m_mea = d._m_mea;
-    strcpy(d1._m_init, d._m_init);
-    strcpy(d1._m_upd, d._m_upd);
+    __set_localdtc(&d1, &d);
     /*/////////////////////////////////////////////////////////////////////// */
     while (N <= d.N_M)
     {
@@ -525,28 +555,34 @@ extern void __compute_ACF(char *config_fn)
         __mkdir_syszN(_dirsz, L1, L2, N);
         for (double b = d.b_m; b < d.b_M; b += d.b_s)
         {
-            printf("Simulating N = %" PRIu32 "\tbeta=%lf\n\n", N, b);
+            // printf("Simulating N = %" PRIu32 "\tbeta=%lf\n\n", N, b);
             __mkdir_syszb(_dirb, b, _dirsz);
-            d1.b = b;
-            d1.L1 = L1;
-            d1.L2 = L2;
-            d1._m_sav = d._m_sav;
-            d1.tMC = d.tMC * N;
+            __upd_localdtc(&d1, b, L1, L2, N);
             O.magn = malloc(sizeof(*O.magn) * d1.tMC);
             ACFcorr = calloc(d1.tMC, sizeof(*ACFcorr));
+            ti = malloc(sizeof(*ti) * d.Navg);
             for (uint32_t av = 0; av < d.Navg; av++)
             {
                 __gen_config_(d1, O);
                 ACFcorr_tmp = ACFcomputation__(d1, O);
-                for (sysz_t t = 0; t < d1.tMC ; t++)
+                for (t = 0; t < d1.tMC ; t++)
                     ACFcorr[t] += ACFcorr_tmp[t];
+                t = 0;
+                ti[av] = 1. / 2;
+                while (ACFcorr[t++] > 0)
+                {
+                    ti[av] += ACFcorr[t];
+                }
                 free(ACFcorr_tmp);
             }
-            for (sysz_t t = 0; t < d1.tMC ; t++)
+            tauint = avg(d.Navg, ti);;
+            for (t = 0; t < d1.tMC ; t++)
                 ACFcorr[t] /= d.Navg;
             __fwrite_ACF(_dirb, d.Navg, d1.tMC, ACFcorr);
+            __fwrite_ti(_dirb, d.Navg, d1.tMC, tauint);
             free(ACFcorr);
             free(O.magn);
+            free(ti);
         }
         L1 += Ls;
         L2 += Ls;
@@ -554,6 +590,7 @@ extern void __compute_ACF(char *config_fn)
     }
 }
 
+//TRASH
 // extern void updWO(double T, sysz_t N, lttc_t *s, nnl_t *nn)
 // {
 //     //    int j, nn[Z];
@@ -563,7 +600,6 @@ extern void __compute_ACF(char *config_fn)
 //     //       if(s0 == s[nn[j]] && RNG_dbl() < p)
 //     //          flip(nn[j], s0);
 // }
-
 // #include <stdio.h>
 // #include <sys/stat.h>
 // #include <stdlib.h>
@@ -821,7 +857,7 @@ extern void __compute_ACF(char *config_fn)
 //     /*///////////////////////////////////////////////////////// set save mode */
 //     for (double b = dtc.b_m; b < dtc.b_M; b += dtc.b_s)
 //     {
-//         sprintf(dirsave2, "%sbeta=" STR_FMT_bt _S, dirsave, b);
+//         sprintf(dirsave2, "%sbeta=" FMT_bt _S, dirsave, b);
 //         mkdir(dirsave2, ACCESSPERMS);
 //         __init__(N, s);
 //         for (sysz_t t = 1; t < dtc.tMCMC + 1; t++)
