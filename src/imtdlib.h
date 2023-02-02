@@ -21,7 +21,6 @@ typedef struct nearest_neigh_on_lattice
 } nnl_t;
 typedef struct config_one
 {
-    bool _m_mea;
     side_t L1;
     side_t L2;
     sysz_t tMC;
@@ -29,6 +28,7 @@ typedef struct config_one
     double b;
     char _m_init[128];
     char _m_upd[128];
+    bool _m_mea;
 } smdtc_t;
 typedef struct data_config
 {

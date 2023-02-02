@@ -137,9 +137,19 @@ extern void __fscanf_configfile(dtc_t *d, char *config_fn)
 extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, sysz_t N)
 {
     if (L1 == L2)
-        sprintf(_dirsz, DIRobs __NIS__ _S, N);
+    {
+        if (strcmp(_dirsz, "--acf") == 0)
+            sprintf(_dirsz, DIRobs __NIS__ _S, N);
+        else if (strcmp(_dirsz, "--gen_config") == 0)
+            sprintf(_dirsz, DIRvbc __NIS__ _S, N);
+    }
     else
-        sprintf(_dirsz, DIRobs __L1IS_L2IS__ _S, L1, L2);
+    {
+        if (strcmp(_dirsz, "--acf") == 0)
+            sprintf(_dirsz, DIRobs __L1IS_L2IS__ _S, L1, L2);
+        else if (strcmp(_dirsz, "--gen_config") == 0)
+            sprintf(_dirsz, DIRvbc __L1IS_L2IS__ _S, L1, L2);
+    }
     mkdir(_dirsz, ACCESSPERMS);
 }
 /**
@@ -365,9 +375,9 @@ extern void __upd_ME__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
  */
 extern void __gen_config_(smdtc_t d, obs_t O)
 {
-    char dirsave[256], dirsave2[512];
+    char _dirsz[256], _dirb[512];
     double beta;
-    uint64_t save_time;
+    uint32_t save_time;
     side_t L1, L2;
     sysz_t N;
     lttc_t *s;
@@ -386,11 +396,8 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     __challoc(nn);
     compute_nn_array(L1, L2, nn);
     /*///////////////////////////////////////////// create folder for results */
-    if (L1 == L2)
-        sprintf(dirsave, DIRvbc "N=%" PRIu32 _S, N);
-    else
-        sprintf(dirsave, DIRvbc "L1=%" PRIu16 _U "L2=%" PRIu16 _S, L1, L2);
-    mkdir(dirsave, ACCESSPERMS);
+    sprintf(_dirsz, "--gen_config");
+    __mkdir_syszN(_dirsz, L1, L2, N);
     /*///////////////////////////////////////////////////////// set init mode */
     if (strcmp(d._m_init, "hs_unif") == 0)
         __init__ = __init_hotstart_uniform;
@@ -405,16 +412,16 @@ extern void __gen_config_(smdtc_t d, obs_t O)
         __upd__ = NULL;
     /*///////////////////////////////////////////////////////// set save mode */
     if (d._m_sav)
-        save_time = d._m_sav;
+        save_time = (uint32_t)(1./d._m_sav * N);
     else
-        save_time = d.tMC;
+        save_time = d.tMC + 1;
     /*////////////////////////////////////////////////////// set measure mode */
     if (strcmp(d._m_upd, "algo_metro") == 0)
         __measure__ = __measure_OBS;
     else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
         __measure__ = __dont_measure;
-    sprintf(dirsave2, "%sbeta=" STR_FMT_bt _S, dirsave, beta);
-    mkdir(dirsave2, ACCESSPERMS);
+    /*///////////////////////////////////////////// create folder for results */
+    __mkdir_syszb(_dirb, beta, _dirsz);
     __init__(N, s);
     for (sysz_t t = 1; t < d.tMC + 1; t++)
     {
@@ -422,7 +429,7 @@ extern void __gen_config_(smdtc_t d, obs_t O)
         __measure__(t - 1, N, s, O);
         __upd__(beta, N, s, nn);
         if (!(t % save_time))
-            __fwrite_CONFIG(dirsave2, t, N, s);
+            __fwrite_CONFIG(_dirb, t, N, s);
     }
     // printf("\n");
     free(s);
@@ -432,7 +439,7 @@ extern void __compute_ACF(char *config_fn)
 {
     char _dirsz[256], _dirb[512];
     side_t L1, L2, Ls;
-    sysz_t N;
+    sysz_t N    ;
     uint32_t Ns;
     double *ACFcorr, *ACFcorr_tmp;
     smdtc_t d1;
@@ -447,41 +454,42 @@ extern void __compute_ACF(char *config_fn)
     L2 = d.L2;
     Ls = d.Ls;
     N = (L1 * L2);
-    d.tMC = d.tMC * N;
-    d._m_sav = d.tMC + 1;
-    d._m_mea = d._m_mea;
+    d1._m_mea = d._m_mea;
     strcpy(d1._m_init, d._m_init);
     strcpy(d1._m_upd, d._m_upd);
     /*/////////////////////////////////////////////////////////////////////// */
-    for (sysz_t sN = N; sN <= d.N_M; sN += L1 * Ls + L2 * Ls + Ls * Ls)
+    while (N <= d.N_M)
     {
-        __mkdir_syszN(_dirsz, L1, L2, sN);
+        sprintf(_dirsz, "--acf");
+        __mkdir_syszN(_dirsz, L1, L2, N);
         for (double b = d.b_m; b < d.b_M; b += d.b_s)
         {
-            printf("Simulating N = %" PRIu32 "\tbeta=%lf\n\n", sN, b);
+            printf("Simulating N = %" PRIu32 "\tbeta=%lf\n\n", N, b);
             __mkdir_syszb(_dirb, b, _dirsz);
             d1.b = b;
             d1.L1 = L1;
             d1.L2 = L2;
-            d1.tMC = sN * d.tMC;
+            d1._m_sav = d._m_sav;
+            d1.tMC = d.tMC * N;
             O.magn = malloc(sizeof(*O.magn) * d1.tMC);
             ACFcorr = calloc(d1.tMC, sizeof(*ACFcorr));
             for (uint32_t av = 0; av < d.Navg; av++)
             {
                 __gen_config_(d1, O);
                 ACFcorr_tmp = ACFcomputation__(d1, O);
-                for (uint16_t i = 0; i < d.Navg; i++)
-                    ACFcorr[i] += ACFcorr_tmp[i];
+                for (sysz_t t = 0; t < d1.tMC ; t++)
+                    ACFcorr[t] += ACFcorr_tmp[t];
                 free(ACFcorr_tmp);
             }
-            for (sysz_t i = 0; i < d.Navg; i++)
-                ACFcorr[i] /= d.Navg;
-            __fwrite_ACF(_dirb, d.Navg, d.tMC, ACFcorr);
+            for (sysz_t t = 0; t < d1.tMC ; t++)
+                ACFcorr[t] /= d.Navg;
+            __fwrite_ACF(_dirb, d.Navg, d1.tMC, ACFcorr);
             free(ACFcorr);
             free(O.magn);
         }
         L1 += Ls;
         L2 += Ls;
+        N = (L1 * L2);
     }
 }
 

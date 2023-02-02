@@ -8,6 +8,9 @@ FILES.c = ${srcFILES.c} ${SFMTFILES.c}
 FILES.o = ${FILES.c:.c=.o}
 PATHS.c := $(addprefix $(PATH_SRC), $(srcFILES.c)) $(addprefix $(PATH_SFMT), $(SFMTFILES.c))
 
+DIRS := res/ res/vbc res/obs res/log
+$(shell mkdir -p $(DIRS))
+
 PROGRAM = ising-model-c
 CC        = gcc
 GFLAGS    = -g
@@ -28,6 +31,8 @@ ${PROGRAM}: ${PATHS.c}
 
 DEBRIS = a.out *~ 
 RM_FR  = rm -fr
+
+
 
 clean:
 	${RM_FR} ${FILES.o} ${DEBRIS}

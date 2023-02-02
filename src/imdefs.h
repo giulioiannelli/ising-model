@@ -75,7 +75,7 @@
 #define DIRanm DIRres "animated/"
 #define DIRcfg DIRres "config_files/"
 #define DIRlog DIRres "log/"
-#define DIRvbc DIRres "varbeta_isingcfg/"
+#define DIRvbc DIRres "vbc/"
 #define DIRobs DIRres "obs/"
 /**/
 

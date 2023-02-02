@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     /* execute program according to mode */
     if (strcmp(argv[1], "--acf") == 0)
         __compute_ACF(argv[2]);
-    
+    fclose(f_log);
 }
 
     // else if (strcmp(argv[1], "--gen_config") == 0){
