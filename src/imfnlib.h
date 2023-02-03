@@ -5,6 +5,7 @@
 #define __IMFNLIB_H_INC__
 
 double avg(avg_t n, double *v);
+int str_in(char **arr, int len, char *target);
 uint16_t strtou16(const char *s);
 uint32_t strtou32(const char *s);
 
@@ -22,11 +23,13 @@ extern void __print_CONFIG(sysz_t N, side_t L1, lttc_t *s);
 extern void __fprint_CONFIG(char *fn, sysz_t N, side_t L1, lttc_t *s);
 extern void __fwrite_CONFIG(char *fn, sysz_t t, sysz_t N, lttc_t *s);
 extern void __fwrite_ACF(char *fn, uint16_t na, sysz_t tMC, double *acf);
-extern void __fwrite_ti(char *fn, uint16_t na, sysz_t tMC, double ti);
+extern void __fwrite_ti(char *fn, uint16_t na, double ti);
 extern void __fscanf_configfile(dtc_t *dtc, char *config_fn);
 extern void __set_localdtc(smdtc_t *d1, dtc_t *d);
 extern void __printf_configfile(dtc_t d, char *config_fn);
-extern void __print_configf(char *config_fn, const char *mode);
+extern void __print_configf(char *config_fn);
+extern void __set_localdtc(smdtc_t *d1, dtc_t *d);
+extern void __upd_localdtc(smdtc_t *d1, double b, side_t L1, side_t L2);
 
 extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, sysz_t N);
 extern void __mkdir_syszb(char *_dirb, double beta, char*_dirsz);
@@ -41,7 +44,10 @@ extern double m_avg(sysz_t tMC, double *m);
 extern double m_avg2(sysz_t tMC, double *m);
 extern double m_corr_t(sysz_t tMC, sysz_t l, double *m);
 extern double dE(sysz_t u, lttc_t *s, nnl_t nn);
+// extern double *__ACFcomputation(smdtc_t d1, obs_t O);
+extern void __ACFcomputation(double **corr, smdtc_t d1, obs_t O);
 extern double *ACFcomputation__(smdtc_t d1, obs_t O);
+
 
 extern void __dont_measure(void);
 extern void __measure_OBS(sysz_t t, sysz_t N, lttc_t *s, obs_t O);

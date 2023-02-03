@@ -18,7 +18,9 @@
         "random": "c",
         "*.tcc": "c",
         "cmath": "c",
-        "imfnlib.h": "c"
+        "imfnlib.h": "c",
+        "errno.h": "c",
+        "stdio.h": "c"
     },
     "cmake.configureOnOpen": true
 }

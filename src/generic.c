@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <string.h>
+
 #include <imdefs.h>
 #include <imtdlib.h>
 #include <imfnlib.h>
@@ -14,6 +16,16 @@ double avg(avg_t n, double *v)
     for (avg_t i = 0; i < n; i++) 
         s += v[i];
     return (s / n);
+}
+int str_in(char **arr, int len, char *target)
+{
+  int i;
+  for(i = 0; i < len; i++) {
+    if(strncmp(arr[i], target, strlen(target)) == 0) {
+      return i+1;
+    }
+  }
+  return 0;
 }
 
 uint16_t strtou16(const char *s) {

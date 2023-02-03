@@ -1,6 +1,7 @@
 #ifndef __IMDEFS_H_INC__
 #define __IMDEFS_H_INC__
 /**/
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define DUMP(x) (#x)
 /**/
 #define _HLIFI "{+}"
