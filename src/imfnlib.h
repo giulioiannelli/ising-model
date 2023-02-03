@@ -46,8 +46,6 @@ extern double m_corr_t(sysz_t tMC, sysz_t l, double *m);
 extern double dE(sysz_t u, lttc_t *s, nnl_t nn);
 // extern double *__ACFcomputation(smdtc_t d1, obs_t O);
 extern void __ACFcomputation(double **corr, smdtc_t d1, obs_t O);
-extern double *ACFcomputation__(smdtc_t d1, obs_t O);
-
 
 extern void __dont_measure(void);
 extern void __measure_OBS(sysz_t t, sysz_t N, lttc_t *s, obs_t O);

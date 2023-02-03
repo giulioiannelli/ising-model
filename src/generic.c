@@ -148,6 +148,7 @@ extern void __setSFMT_seed_rand(void)
  */
 extern void __MAKElog(int argc, const char *progn, char *argv[])
 {
+    sprintf(buf, DIRlog "%s" _UCFG "%s" EXTLOG, progn, argv[1] + strlen(DIRcfg) + 1);
     if ((f_log = fopen(buf, "w+")) == NULL)
     {
         printf(MSGFAIL PFFOPEN "%s" MSGEXIT, buf);

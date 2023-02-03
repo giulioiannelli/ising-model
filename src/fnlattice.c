@@ -412,26 +412,6 @@ extern void __ACFcomputation(double **corr, smdtc_t d1, obs_t O)
     while (l < tMC - 1)
         *(*corr + l) = fabs(m_corr_t(tMC, l++, O.magn) - mavg2) / (m2avg - mavg2);
 }
-extern double *ACFcomputation__(smdtc_t d1, obs_t O)
-{
-    // devo generare configurazioni al variare di N e beta e poi salvare
-    // il contenuto, quindi devo creare files di configurazione, i files di
-    // il simtime deve scalare con dist(T, T_c) e la taglia del sistema
-    sysz_t tMC, l;
-    double mavg, mavg2, m2avg;
-    tMC = d1.tMC * d1.L1 * d1.L2;
-    double *corr = malloc(tMC * sizeof(*corr));
-    mavg = m_avg(tMC, O.magn);
-    m2avg = m_avg2(tMC, O.magn);
-    mavg2 = mavg * mavg;
-    corr[l = 0] = 1;
-    while (l < tMC - 1)
-    {
-        corr[l] = (m_corr_t(tMC, l, O.magn) - mavg2) / (m2avg - mavg2);
-        l++;
-    }
-    return corr;
-}
 /**
  * ...
  * @param
@@ -541,7 +521,6 @@ extern void __compute_ACF(char *config_fn)
     char _dirsz[256], _dirb[512];
     side_t L1, L2, Ls;
     sysz_t N, tMC;
-    uint32_t Ns;
     double tauint;
     double *ACFcorr, *ACFcorr_cum, *ti;
     smdtc_t d1;
@@ -573,7 +552,6 @@ extern void __compute_ACF(char *config_fn)
             {
                 __gen_config_(d1, O);
                 __ACFcomputation(&ACFcorr, d1, O);
-                __fwrite_ACF(_dirb, av, tMC, ACFcorr);
                 //
                 for (sysz_t t = 0; t < tMC; t++)
                     ACFcorr_cum[t] += ACFcorr[t];
