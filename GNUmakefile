@@ -11,7 +11,7 @@ PATHS.c := $(addprefix $(PATH_SRC), $(srcFILES.c)) $(addprefix $(PATH_SFMT), $(S
 DIRS := res/ res/vbc res/obs res/log
 $(shell mkdir -p $(DIRS))
 
-PROGRAM = ising-model-c
+PROGRAM ?= ising-model-c
 CC        = gcc
 GFLAGS    = -g
 OFLAGS    = -O3

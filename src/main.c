@@ -16,11 +16,6 @@
 
 #define PROGN "ising-model-c"
 
-typedef struct modes_dict
-{
-    char *__name__;
-    void (*__mode__)();
-} md_t;
 
 char buf[1024];
 char *MODES[] = {"--print_c", "--acf"}; //, "--gen_c"

@@ -540,7 +540,6 @@ extern void __compute_ACF(char *config_fn)
         __mkdir_syszN(_dirsz, L1, L2, N);
         for (double b = d.b_m; b < d.b_M; b += d.b_s)
         {
-            
             __mkdir_syszb(_dirb, b, _dirsz);
             __upd_localdtc(&d1, b, L1, L2);
             tMC = d1.tMC * N;

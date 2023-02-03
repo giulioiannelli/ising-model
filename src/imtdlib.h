@@ -9,9 +9,15 @@ typedef int8_t lttc_t;
 typedef uint16_t side_t;
 typedef uint16_t avg_t;
 typedef uint32_t sysz_t;
+typedef struct modes_dict
+{
+    char *__name__;
+    void (*__mode__)();
+} md_t;
 typedef struct observables
 {
     double *magn;
+    double *acf;
 } obs_t;
 typedef struct nearest_neigh_on_lattice
 {
