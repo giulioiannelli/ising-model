@@ -17,6 +17,7 @@
 
 extern uint64_t SFMTrng_u64(void);
 extern double SFMTrng_dbl(void);
+void __check_RNG(void);
 
 extern sfmt_t sfmt;
 extern uint32_t *seed_rand;

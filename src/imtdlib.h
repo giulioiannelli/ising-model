@@ -9,16 +9,19 @@ typedef int8_t lttc_t;
 typedef uint16_t side_t;
 typedef uint16_t avg_t;
 typedef uint32_t sysz_t;
+/* mode program execute struct type */
 typedef struct modes_dict
 {
     char *__name__;
     void (*__mode__)();
 } md_t;
+/* struct for storing observable */
 typedef struct observables
 {
     double *magn;
     double *acf;
 } obs_t;
+/* struct for storing nearest neighbours */
 typedef struct nearest_neigh_on_lattice
 {
     uint32_t N;
@@ -54,6 +57,6 @@ typedef struct data_config
     bool _m_mea;
 } dtc_t;
 
-
+extern char *MODES[];
 
 #endif  /* __IMDTLIB_H_INC__ */

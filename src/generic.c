@@ -146,15 +146,15 @@ extern void __setSFMT_seed_rand(void)
  * @param progn the name of the program
  * @return (voide) none
  */
-extern void __MAKElog(int argc, const char *progn, char *argv[])
+extern void __MAKElog(int argc, char *argv[])
 {
-    sprintf(buf, DIRlog "%s" _UCFG "%s" EXTLOG, progn, argv[1] + strlen(DIRcfg) + 1);
+    sprintf(buf, DIRlog "%s" _UCFG "%s" EXTLOG, argv[0]+strlen(DIR), argv[1] + strlen(DIRcfg) + 1);
     if ((f_log = fopen(buf, "w+")) == NULL)
     {
         printf(MSGFAIL PFFOPEN "%s" MSGEXIT, buf);
         exit(EXIT_FAILURE);
     }
-    fprintf(f_log, LOGHEAD "%s" MSGINFO, progn);
+    fprintf(f_log, LOGHEAD "%s" MSGINFO, argv[0]+strlen(DIR));
     for (int i = 0; i < argc; i++)
         fprintf(f_log, (i < argc - 1 ? "%s " : "%s"), argv[i]);
 }

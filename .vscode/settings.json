@@ -20,7 +20,10 @@
         "cmath": "c",
         "imfnlib.h": "c",
         "errno.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "string.h": "c",
+        "stat.h": "c"
     },
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "editor.rulers": [80, 120]
 }

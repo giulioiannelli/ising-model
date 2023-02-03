@@ -222,21 +222,21 @@ extern void __print_configf(char *config_fn)
  * @param
  * @return
  */
-extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, sysz_t N)
+extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, sysz_t N, smdtc_t d)
 {
     if (L1 == L2)
     {
         if (strcmp(_dirsz, "--acf") == 0)
-            sprintf(_dirsz, DIRobs __NIS__ _S, N);
+            sprintf(_dirsz, DIRobs "%s" _H "%s" __NIS__ _S, d._m_init, d._m_upd, N);
         else if (strcmp(_dirsz, "--gen_config") == 0)
-            sprintf(_dirsz, DIRvbc __NIS__ _S, N);
+            sprintf(_dirsz, DIRvbc "%s" _H "%s" __NIS__ _S, d._m_init, d._m_upd, N);
     }
     else
     {
         if (strcmp(_dirsz, "--acf") == 0)
-            sprintf(_dirsz, DIRobs __L1IS_L2IS__ _S, L1, L2);
+            sprintf(_dirsz, DIRobs "%s" _H "%s" __L1IS_L2IS__ _S, d._m_init, d._m_upd, L1, L2);
         else if (strcmp(_dirsz, "--gen_config") == 0)
-            sprintf(_dirsz, DIRvbc __L1IS_L2IS__ _S, L1, L2);
+            sprintf(_dirsz, DIRvbc "%s" _H "%s" __L1IS_L2IS__ _S, d._m_init, d._m_upd, L1, L2);
     }
     mkdir(_dirsz, ACCESSPERMS);
 }
@@ -410,7 +410,7 @@ extern void __ACFcomputation(double **corr, smdtc_t d1, obs_t O)
     *(*corr + (l = 0)) = 1;
 
     while (l < tMC - 1)
-        *(*corr + l) = fabs(m_corr_t(tMC, l++, O.magn) - mavg2) / (m2avg - mavg2);
+        *(*corr + l) = (m_corr_t(tMC, l++, O.magn) - mavg2) / (m2avg - mavg2);
 }
 /**
  * ...
@@ -435,7 +435,7 @@ extern void __measure_OBS(sysz_t t, sysz_t N, lttc_t *s, obs_t O)
  * @param
  * @return
  */
-extern void __upd_ME__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
+extern void __upd_MEseq__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
 {
     double dEtmp;
     for (sysz_t u = 0; u < N; u++)
@@ -447,7 +447,25 @@ extern void __upd_ME__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
             s[u] = -s[u];
     }
 }
-
+/**
+ * ...
+ * @param
+ * @return
+ */
+extern void __upd_MEasy__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
+{
+    sysz_t u;
+    double dEtmp;
+    for (sysz_t i = 0; i < N; i++)
+    {
+        u = RNG_u64() % N;
+        dEtmp = dE(u, s, nn[u]);
+        if (dEtmp <= 0)
+            s[u] = -s[u];
+        else if (RNG_dbl() < exp(-dEtmp * beta))
+            s[u] = -s[u];
+    }
+}
 /**
  * generate Ising 2D lattice configuration(s) following instructions provided in
  * configuration file specified by string config_fn
@@ -479,7 +497,7 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     compute_nn_array(L1, L2, nn);
     /*///////////////////////////////////////////// create folder for results */
     sprintf(_dirsz, "--gen_config");
-    __mkdir_syszN(_dirsz, L1, L2, N);
+    __mkdir_syszN(_dirsz, L1, L2, N, d);
     /*///////////////////////////////////////////////////////// set init mode */
     if (strcmp(d._m_init, "hs_unif") == 0)
         __init__ = __init_hotstart_uniform;
@@ -488,8 +506,10 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     else
         __init__ = NULL;
     /*///////////////////////////////// set update mode (wolff or metropolis) */
-    if (strcmp(d._m_upd, "algo_metro") == 0)
-        __upd__ = __upd_ME__scheme;
+    if (strcmp(d._m_upd, "algo_metro_s") == 0)
+        __upd__ = __upd_MEseq__scheme;
+    else if (strcmp(d._m_upd, "algo_metro_a") == 0)
+        __upd__ = __upd_MEasy__scheme;
     else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
         __upd__ = NULL;
     /*///////////////////////////////////////////////////////// set save mode */
@@ -537,7 +557,7 @@ extern void __compute_ACF(char *config_fn)
     while (N <= d.N_M)
     {
         sprintf(_dirsz, "--acf");
-        __mkdir_syszN(_dirsz, L1, L2, N);
+        __mkdir_syszN(_dirsz, L1, L2, N, d1);
         for (double b = d.b_m; b < d.b_M; b += d.b_s)
         {
             __mkdir_syszb(_dirb, b, _dirsz);
