@@ -409,10 +409,8 @@ extern void __ACFcomputation(double **corr, smdtc_t d1, obs_t O)
     mavg2 = mavg * mavg;
     *(*corr + (l = 0)) = 1;
 
-    while (l < tMC - 1){
-        printf("%d, corr0=%lf\n", l, *(*corr + l));
+    while (l < tMC - 1)
         *(*corr + l) = fabs(m_corr_t(tMC, l++, O.magn) - mavg2) / (m2avg - mavg2);
-    }
 }
 extern double *ACFcomputation__(smdtc_t d1, obs_t O)
 {
@@ -527,17 +525,14 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     /*///////////////////////////////////////////// create folder for results */
     __mkdir_syszb(_dirb, beta, _dirsz);
     __init__(N, s);
-    // printf("tmc gen = %" PRIu32 "\n", tMC);
-    for (sysz_t t = 1; t < tMC + 1; t++)
+    for (sysz_t t = 1; t < tMC + 1; t++) // printf("\rt = %d", t);
     {
-        // printf("\rt = %d", t);
+        
         __measure__(t - 1, N, s, O);
-        // printf("magn = %lf\n", O.magn[t]);
         __upd__(beta, N, s, nn);
         if (!(t % save_time))
             __fwrite_CONFIG(_dirb, t, N, s);
     }
-    // printf("\n");
     free(s);
     free(nn);
 }
@@ -554,14 +549,11 @@ extern void __compute_ACF(char *config_fn)
     obs_t O;
     /*///////////////////////////////// open and read config_file + variables */
     __fscanf_configfile(&d, config_fn);
-    Ns = countNsteps(d);
-    printf("Number of steps in system size: %" PRIu32 "\n", Ns);
-    // betas = countbetasteps(d);
+    __set_localdtc(&d1, &d);
     L1 = d.L1;
     L2 = d.L2;
     Ls = d.Ls;
     N = (L1 * L2);
-    __set_localdtc(&d1, &d);
     /*////////////////////////////////////////////////////////////////////////*/
     while (N <= d.N_M)
     {
@@ -569,11 +561,10 @@ extern void __compute_ACF(char *config_fn)
         __mkdir_syszN(_dirsz, L1, L2, N);
         for (double b = d.b_m; b < d.b_M; b += d.b_s)
         {
-            // printf("Simulating N = %" PRIu32 "\tbeta=%lf\ttmc = %"PRIu32"\n", N, b, d1.tMC);
+            
             __mkdir_syszb(_dirb, b, _dirsz);
             __upd_localdtc(&d1, b, L1, L2);
             tMC = d1.tMC * N;
-            // printf("tmc gen = %" PRIu32 "\n", tMC);
             ti = malloc(sizeof(*ti) * d.Navg);
             O.magn = malloc(sizeof(*O.magn) * tMC);
             ACFcorr = calloc(tMC, sizeof(*ACFcorr));
@@ -583,7 +574,7 @@ extern void __compute_ACF(char *config_fn)
                 __gen_config_(d1, O);
                 __ACFcomputation(&ACFcorr, d1, O);
                 __fwrite_ACF(_dirb, av, tMC, ACFcorr);
-                // ACFcorr = __ACFcomputation(d1, O);
+                //
                 for (sysz_t t = 0; t < tMC; t++)
                     ACFcorr_cum[t] += ACFcorr[t];
                 sysz_t tt = 0;
