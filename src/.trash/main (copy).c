@@ -47,9 +47,9 @@ int main(int argc, char *argv[])
     __setSFMT_seed_rand();
     /* execute program according to mode */
     for (int a = 2; a < argc; a++)
-        if ((MODE = str_in(MODES, ARRAY_SIZE(MODES), argv[a])))
+        if ((MODE = strIn_(MODES, ARRAY_SIZE(MODES), argv[a])))
             run[MODE - 1].__mode__(argv[1]);
-    // if (str_in(MODES, ARRAY_SIZE(MODES), argv[2]) == 0)
+    // if (strIn_(MODES, ARRAY_SIZE(MODES), argv[2]) == 0)
     //     __print_configf(argv[2], "stoutprint");
     // if (strcmp(argv[1], "--acf") == 0)
     //     __compute_ACF(argv[2]);

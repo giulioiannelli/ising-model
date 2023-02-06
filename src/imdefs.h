@@ -2,6 +2,7 @@
 #define __IMDEFS_H_INC__
 /**/
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#define ARRAY_SIZE_2D(arr) (sizeof(arr) / sizeof((arr)[0][0]))
 #define DUMP(x) (#x)
 /**/
 #define _HLIFI "{+}"
@@ -154,6 +155,6 @@
 extern FILE *f_log;
 extern char buf[1024];
 
-
+#define NMODES 3
 
 #endif /* __IMDEFS_H_INC__ */

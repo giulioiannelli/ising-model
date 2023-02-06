@@ -191,6 +191,7 @@ extern void __upd_localdtc(smdtc_t *d1, double b, side_t L1, side_t L2)
     d1->b = b;
     d1->L1 = L1;
     d1->L2 = L2;
+    d1->_m_sav = 1. / (L1 * L2);
 }
 extern void __printf_configfile(dtc_t d, char *config_fn)
 {

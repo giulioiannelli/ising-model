@@ -9,26 +9,23 @@
 #include <imfnlib.h>
 #include <imrng.h>
 
+/* STRING RELATED FUNCTIONS ************************************************* */
 
-double avg(avg_t n, double *v)
+/* check if a string is in an array of strings. If so return the index of the
+ * array corresponding to the srting element.
+ * @param s (char *) the string to be checked
+ * @param ss (char **) the array of strings
+ * @return (size_t) 0 if the string is not in the array, index + 1 if there is.
+ */
+extern size_t strIn_(char *s, const char **ss)
 {
-    double s = 0.;
-    for (avg_t i = 0; i < n; i++) 
-        s += v[i];
-    return (s / n);
+    for (size_t id = 0; id < ARRAY_SIZE_2D(ss); id++)
+        if (!(strncmp(ss[id], s, strlen(s))))
+            return id + 1;
+    return 0;
 }
-int str_in(char **arr, int len, char *target)
+uint16_t strtou16(const char *s)
 {
-  int i;
-  for(i = 0; i < len; i++) {
-    if(strncmp(arr[i], target, strlen(target)) == 0) {
-      return i+1;
-    }
-  }
-  return 0;
-}
-
-uint16_t strtou16(const char *s) {
     char c;
     int scanned;
     uint16_t i;
@@ -49,7 +46,8 @@ uint16_t strtou16(const char *s) {
     // TBD failed to scan;
     return 0;
 }
-uint32_t strtou32(const char *s) {
+uint32_t strtou32(const char *s)
+{
     char c;
     int scanned;
     uint32_t i;
@@ -69,6 +67,15 @@ uint32_t strtou32(const char *s) {
     }
     return 0;
 }
+
+double avg(avg_t n, double *v)
+{
+    double s = 0.;
+    for (avg_t i = 0; i < n; i++)
+        s += v[i];
+    return (s / n);
+}
+
 
 void __challoc(void *__ptr)
 {
@@ -137,7 +144,7 @@ extern void __CHECKargc(int argc, int NARG)
  */
 extern void __setSFMT_seed_rand(void)
 {
-    seed_rand = (uint32_t [LENSRND]) {SEED, SIID, LSEED, RSEED};
+    seed_rand = (uint32_t[LENSRND]){SEED, SIID, LSEED, RSEED};
     sfmt_init_by_array(&sfmt, seed_rand, LENSRND);
 }
 /**
@@ -148,13 +155,13 @@ extern void __setSFMT_seed_rand(void)
  */
 extern void __MAKElog(int argc, char *argv[])
 {
-    sprintf(buf, DIRlog "%s" _UCFG "%s" EXTLOG, argv[0]+strlen(DIR), argv[1] + strlen(DIRcfg) + 1);
+    sprintf(buf, DIRlog "%s" _UCFG "%s" EXTLOG, argv[0] + strlen(DIR), argv[1] + strlen(DIRcfg) + 1);
     if ((f_log = fopen(buf, "w+")) == NULL)
     {
         printf(MSGFAIL PFFOPEN "%s" MSGEXIT, buf);
         exit(EXIT_FAILURE);
     }
-    fprintf(f_log, LOGHEAD "%s" MSGINFO, argv[0]+strlen(DIR));
+    fprintf(f_log, LOGHEAD "%s" MSGINFO, argv[0] + strlen(DIR));
     for (int i = 0; i < argc; i++)
         fprintf(f_log, (i < argc - 1 ? "%s " : "%s"), argv[i]);
 }

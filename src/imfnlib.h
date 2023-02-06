@@ -4,8 +4,8 @@
 #ifndef __IMFNLIB_H_INC__
 #define __IMFNLIB_H_INC__
 
-double avg(avg_t n, double *v);
-int str_in(char **arr, int len, char *target);
+extern size_t strIn_(char *, const char **);
+double avg(avg_t, double *);
 uint16_t strtou16(const char *s);
 uint32_t strtou32(const char *s);
 
@@ -49,8 +49,9 @@ extern void __ACFcomputation(double **corr, smdtc_t d1, obs_t O);
 
 extern void __dont_measure(void);
 extern void __measure_OBS(sysz_t t, sysz_t N, lttc_t *s, obs_t O);
-extern void __upd_ME__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn);
-extern void  __gen_config_(smdtc_t dtc, obs_t O);
+extern void __upd_MEseq__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn);
+extern void __upd_MEasy__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn);
+extern void __gen_config_(smdtc_t dtc, obs_t O);
 extern void __compute_ACF(char *config_fn);
 
 #endif /* __IMFNLIB_H_INC__ */

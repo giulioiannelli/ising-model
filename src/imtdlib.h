@@ -57,6 +57,6 @@ typedef struct data_config
     bool _m_mea;
 } dtc_t;
 
-extern char *MODES[];
+extern const char *MODES[];
 
 #endif  /* __IMDTLIB_H_INC__ */
