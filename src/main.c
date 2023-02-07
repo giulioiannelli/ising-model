@@ -14,31 +14,29 @@
 #include <imfnlib.h>
 #include <imrng.h>
 
-#define PROGN "ising-model-c"
-
 char buf[1024];
 sfmt_t sfmt;
 uint32_t *seed_rand;
 FILE *f_log;
 
-const char *MODES[] = {"--print_c", "--acf", "--check_sfmt"};
+const char *MODES[] = {"--print_c", "--check_sfmt", "--acf"};
+void (*FUNCS[])() = {__print_configf, __check_RNG, __compute_ACF};
 
 int main(int argc, char *argv[])
 {
     int MODE;
-    md_t run[3];
-    run[0].__mode__ = __print_configf;
-    run[0].__name__ = (char *) MODES[0];
-    run[1].__mode__ = __compute_ACF;
-    run[1].__name__ = (char *) MODES[1];
-    run[2].__mode__ = __check_RNG;
-    run[2].__name__ = (char *) MODES[2];
+    md_t run[NMODES];
+    for (int i = 0; i < NMODES; i++)
+    {
+        run[i].__mode__ = FUNCS[i];
+        run[i].__name__ = (char *) MODES[i];
+    }
     /*///////////////////////////////////////////////////////// open log file */
     __MAKElog(argc, argv);
-    /*////////////////////////////////////// seed the random number generator */
+    /*////////////////////////////////////////////////////////// seed the RNG */
     __setSFMT_seed_rand();
-    /* execute program according to mode */
-    for (int a = 2; a < argc; a++)
+    /*////////////////////////////////////////////////// execute program mode */
+    for (int a = TWO; a < argc; a++)
         if ((MODE = strIn_(argv[a], MODES)))
             run[MODE - 1].__mode__(argv[1]);
     fclose(f_log);

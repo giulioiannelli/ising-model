@@ -31,7 +31,7 @@ extern void __print_configf(char *config_fn);
 extern void __set_localdtc(smdtc_t *d1, dtc_t *d);
 extern void __upd_localdtc(smdtc_t *d1, double b, side_t L1, side_t L2);
 
-extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, sysz_t N, smdtc_t d);
+extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, smdtc_t d);
 extern void __mkdir_syszb(char *_dirb, double beta, char*_dirsz);
 extern uint32_t countNsteps(dtc_t dtc);
 extern uint32_t countbetasteps(dtc_t dtc);
@@ -47,7 +47,7 @@ extern double dE(sysz_t u, lttc_t *s, nnl_t nn);
 // extern double *__ACFcomputation(smdtc_t d1, obs_t O);
 extern void __ACFcomputation(double **corr, smdtc_t d1, obs_t O);
 
-extern void __dont_measure(void);
+extern void __splash__(void);
 extern void __measure_OBS(sysz_t t, sysz_t N, lttc_t *s, obs_t O);
 extern void __upd_MEseq__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn);
 extern void __upd_MEasy__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn);

@@ -15,6 +15,9 @@
 #define RNG_u64 SFMTrng_u64
 #define RNG_dbl SFMTrng_dbl
 
+#define RANDTR01_11 (TWO * (RNG_u64() % TWO) - ONE)
+
+
 extern uint64_t SFMTrng_u64(void);
 extern double SFMTrng_dbl(void);
 void __check_RNG(void);

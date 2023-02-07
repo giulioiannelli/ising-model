@@ -18,7 +18,7 @@
 extern void __init_hotstart_uniform(sysz_t N, lttc_t *s)
 {
     for (sysz_t i = 0; i < N; i++)
-        s[i] = TWO * (RNG_u64() % TWO) - 1;
+        s[i] = RANDTR01_11;
 }
 /**
  * initialize the lattice with a cold start, i.e. all the spins equal to +1 (-1)
@@ -29,7 +29,7 @@ extern void __init_hotstart_uniform(sysz_t N, lttc_t *s)
  */
 extern void __init_coldstart(sysz_t N, lttc_t *s)
 {
-    s[0] = TWO * (RNG_u64() % TWO) - 1;
+    s[0] = RANDTR01_11;
     for (sysz_t i = 1; i < N; i++)
         s[i] = s[0];
 }
@@ -155,6 +155,8 @@ extern void __fscanf_configfile(dtc_t *d, char *config_fn)
     tok = strtok(NULL, ",");
     d->N_M = strtou32(tok);
     tok = strtok(NULL, ",");
+    d->nconf = strtou16(tok);
+    tok = strtok(NULL, ",");
     d->_m_sav = strtou32(tok);
     tok = strtok(NULL, ",");
     d->Navg = strtou16(tok);
@@ -191,7 +193,6 @@ extern void __upd_localdtc(smdtc_t *d1, double b, side_t L1, side_t L2)
     d1->b = b;
     d1->L1 = L1;
     d1->L2 = L2;
-    d1->_m_sav = 1. / (L1 * L2);
 }
 extern void __printf_configfile(dtc_t d, char *config_fn)
 {
@@ -223,21 +224,21 @@ extern void __print_configf(char *config_fn)
  * @param
  * @return
  */
-extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, sysz_t N, smdtc_t d)
+extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, smdtc_t d)
 {
     if (L1 == L2)
     {
         if (strcmp(_dirsz, "--acf") == 0)
-            sprintf(_dirsz, DIRobs "%s" _H "%s" __NIS__ _S, d._m_init, d._m_upd, N);
+            sprintf(_dirsz, DIRobs __NIS__ _H "%s" _H "%s" _S, L1*L2, d._m_init, d._m_upd);
         else if (strcmp(_dirsz, "--gen_config") == 0)
-            sprintf(_dirsz, DIRvbc "%s" _H "%s" __NIS__ _S, d._m_init, d._m_upd, N);
+            sprintf(_dirsz, DIRvbc __NIS__ _H "%s" _H "%s" _S, L1*L2, d._m_init, d._m_upd);
     }
     else
     {
         if (strcmp(_dirsz, "--acf") == 0)
-            sprintf(_dirsz, DIRobs "%s" _H "%s" __L1IS_L2IS__ _S, d._m_init, d._m_upd, L1, L2);
+            sprintf(_dirsz, DIRobs __L1IS_L2IS__ _H "%s" _H "%s" _S, L1, L2, d._m_init, d._m_upd);
         else if (strcmp(_dirsz, "--gen_config") == 0)
-            sprintf(_dirsz, DIRvbc "%s" _H "%s" __L1IS_L2IS__ _S, d._m_init, d._m_upd, L1, L2);
+            sprintf(_dirsz, DIRvbc __L1IS_L2IS__ _H "%s" _H "%s" _S, L1, L2, d._m_init, d._m_upd);
     }
     mkdir(_dirsz, ACCESSPERMS);
 }
@@ -392,33 +393,28 @@ extern double dE(sysz_t u, lttc_t *s, nnl_t nn)
     return dE;
 }
 /**
- * compute autocorrelation time of configuration to be used for generating
- * independent configurations
- * @param config_fn configuration file name
- * @return difference of enegry, if negative accept the proposed move
+ * ...
+ * @param
+ * @return
  */
-extern void __ACFcomputation(double **corr, smdtc_t d1, obs_t O)
+extern void __ACFcomputation(double **acf, smdtc_t d1, obs_t O)
 {
-    // devo generare configurazioni al variare di N e beta e poi salvare
-    // il contenuto, quindi devo creare files di configurazione, i files di
-    // il simtime deve scalare con dist(T, T_c) e la taglia del sistema
     sysz_t tMC, l;
     double mavg, mavg2, m2avg;
     tMC = d1.tMC * d1.L1 * d1.L2;
     mavg = m_avg(tMC, O.magn);
     m2avg = m_avg2(tMC, O.magn);
     mavg2 = mavg * mavg;
-    *(*corr + (l = 0)) = 1;
-
-    while (l < tMC - 1)
-        *(*corr + l) = (m_corr_t(tMC, l++, O.magn) - mavg2) / (m2avg - mavg2);
+    *(*acf + (l = 0)) = 1;
+    while (++l < tMC - 1)
+        *(*acf + l) = (m_corr_t(tMC, l, O.magn) - mavg2) / (m2avg - mavg2);
 }
 /**
  * ...
  * @param
  * @return
  */
-extern void __dont_measure(void)
+extern void __splash__(void)
 {
     ;
 }
@@ -498,7 +494,7 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     compute_nn_array(L1, L2, nn);
     /*///////////////////////////////////////////// create folder for results */
     sprintf(_dirsz, "--gen_config");
-    __mkdir_syszN(_dirsz, L1, L2, N, d);
+    __mkdir_syszN(_dirsz, L1, L2, d);
     /*///////////////////////////////////////////////////////// set init mode */
     if (strcmp(d._m_init, "hs_unif") == 0)
         __init__ = __init_hotstart_uniform;
@@ -514,26 +510,28 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
         __upd__ = NULL;
     /*///////////////////////////////////////////////////////// set save mode */
+    // printf("save config every: %" PRIu32 "\n", d._m_sav);
     if (d._m_sav)
-        save_time = (uint32_t)(1./d._m_sav * N);
+        save_time = d._m_sav;
     else
         save_time = tMC + 1;
     /*////////////////////////////////////////////////////// set measure mode */
-    if (strcmp(d._m_upd, "algo_metro") == 0)
+    if (d._m_mea)
         __measure__ = __measure_OBS;
     else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
-        __measure__ = __dont_measure;
+        __measure__ = __splash__;
     /*///////////////////////////////////////////// create folder for results */
     __mkdir_syszb(_dirb, beta, _dirsz);
     __init__(N, s);
     for (sysz_t t = 1; t < tMC + 1; t++) // printf("\rt = %d", t);
     {
-        
+        // printf("\rt = %d", t);
         __measure__(t - 1, N, s, O);
         __upd__(beta, N, s, nn);
         if (!(t % save_time))
             __fwrite_CONFIG(_dirb, t, N, s);
     }
+    // printf("\n");
     free(s);
     free(nn);
 }
@@ -558,7 +556,7 @@ extern void __compute_ACF(char *config_fn)
     while (N <= d.N_M)
     {
         sprintf(_dirsz, "--acf");
-        __mkdir_syszN(_dirsz, L1, L2, N, d1);
+        __mkdir_syszN(_dirsz, L1, L2, d1);
         for (double b = d.b_m; b < d.b_M; b += d.b_s)
         {
             __mkdir_syszb(_dirb, b, _dirsz);
@@ -577,7 +575,7 @@ extern void __compute_ACF(char *config_fn)
                     ACFcorr_cum[t] += ACFcorr[t];
                 sysz_t tt = 0;
                 ti[av] = 1. / 2;
-                while (ACFcorr[tt++] > 1/ M_E && tt < tMC)
+                while (ACFcorr[tt++] > 1/M_E && tt < tMC)
                     ti[av] += ACFcorr[tt];
             }
             tauint = avg(d.Navg, ti);
@@ -595,6 +593,49 @@ extern void __compute_ACF(char *config_fn)
         N = (L1 * L2);
     }
 }
+// extern void __genUNcorr_CONFIG(char *config_fn)
+// {
+//     char _dirsz[256], _dirb[512];
+//     dtc_t d;
+//     smdtc_t d1;
+//     side_t L1, L2, Ls;
+//     sysz_t N, tMC;
+//     obs_t O;
+//     __fscanf_configfile(&d, config_fn);
+//     __set_localdtc(&d1, &d);
+//     L1 = d.L1;
+//     L2 = d.L2;
+//     Ls = d.Ls;
+//     N = (L1 * L2);
+//     while (N <= d.N_M)
+//     {
+//         sprintf(_dirsz, "--gen_unconf");
+//         __mkdir_syszN(_dirsz, L1, L2, d1);
+//         for (double b = d.b_m; b < d.b_M; b += d.b_s)
+//         {
+//             __mkdir_syszb(_dirb, b, _dirsz);
+//             __upd_localdtc(&d1, b, L1, L2);
+//             // read tauint and use it as tmC
+//             tMC = d1.tMC * N;
+//             for (uint32_t av = 0; av < d.Navg; av++)//here use not dnavg ma 
+//                 __gen_config_(d1, O);
+//         }
+//         L1 += Ls;
+//         L2 += Ls;
+//         N = (L1 * L2);
+//     }
+// }
+
+
+
+
+
+
+
+
+
+
+
 
 //TRASH
 // extern void updWO(double T, sysz_t N, lttc_t *s, nnl_t *nn)

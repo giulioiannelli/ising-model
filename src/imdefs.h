@@ -1,9 +1,9 @@
 #ifndef __IMDEFS_H_INC__
 #define __IMDEFS_H_INC__
 /**/
+#define DUMP(x) (#x)
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define ARRAY_SIZE_2D(arr) (sizeof(arr) / sizeof((arr)[0][0]))
-#define DUMP(x) (#x)
 /**/
 #define _HLIFI "{+}"
 #define _LLPFI "[?]"
@@ -139,6 +139,7 @@
 
 
 #define J 1.                /* coupling strenght*/
+#define ONE 1
 #define TWO 2               /* number two */
 #define LENSRND 4           /* seed array for sfmt length */
 #define MAX_tMCMC 10        /**/

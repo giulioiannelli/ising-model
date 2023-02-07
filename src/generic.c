@@ -11,7 +11,7 @@
 
 /* STRING RELATED FUNCTIONS ************************************************* */
 
-/* check if a string is in an array of strings. If so return the index of the
+/** check if a string is in an array of strings. If so return the index of the
  * array corresponding to the srting element.
  * @param s (char *) the string to be checked
  * @param ss (char **) the array of strings

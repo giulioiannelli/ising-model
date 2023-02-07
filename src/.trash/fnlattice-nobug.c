@@ -396,7 +396,7 @@ extern double *ACFcomputation__(smdtc_t d1, obs_t O)
  * @param
  * @return
  */
-extern void __dont_measure(void)
+extern void __splash__(void)
 {
     ;
 }
@@ -479,7 +479,7 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     if (strcmp(d._m_upd, "algo_metro") == 0)
         __measure__ = __measure_OBS;
     else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
-        __measure__ = __dont_measure;
+        __measure__ = __splash__;
     /*///////////////////////////////////////////// create folder for results */
     __mkdir_syszb(_dirb, beta, _dirsz);
     __init__(N, s);

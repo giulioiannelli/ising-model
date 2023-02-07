@@ -45,6 +45,7 @@ typedef struct data_config
     sysz_t tMC;
     sysz_t N_M;
     sysz_t _m_sav;
+    uint16_t nconf;
     avg_t Navg;
     side_t L1;
     side_t L2;
