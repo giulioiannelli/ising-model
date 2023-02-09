@@ -26,6 +26,7 @@ void (*FUNCS[])() = {__print_configf, __check_RNG, __compute_ACF, __genUNcorr_CO
 
 int main(int argc, char *argv[])
 {
+    //git working
     for (int i = 0; i < NMODES; i++)
     {
         run[i].__mode__ = FUNCS[i];
