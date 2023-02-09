@@ -11,7 +11,8 @@ PATHS.c := $(addprefix $(PATH_SRC), $(srcFILES.c)) $(addprefix $(PATH_SFMT), $(S
 DIRS := res/ res/vbc res/obs res/log res/unconf
 $(shell mkdir -p $(DIRS))
 
-PROGRAM ?= ising-model-c
+PROGRAML ?= ising-lattice
+PROGRAMC ?= ising-chain
 CC        = gcc
 GFLAGS    = -g
 OFLAGS    = -O3
@@ -26,13 +27,15 @@ INC_PATH3 = -Idep/SFMT
 INC_PATHS = ${INC_PATH1} ${INC_PATH2} ${INC_PATH3}
 ALLFLAGS  = ${GFLAGS} ${OFLAGS} ${DSFMTFLAG} ${WFLAGS} ${INC_PATHS}
 
-${PROGRAM}: ${PATHS.c}
+all:
+${PROGRAML}: ${PATHS.c}
 	${CC} ${ALLFLAGS} -o $@ $^ ${LMFLAG}
+
+# ${PROGRAMC}: src/
+# 	${CC} ${ALLFLAGS} -o $@ $^ ${LMFLAG}
 
 DEBRIS = a.out *~ 
 RM_FR  = rm -fr
-
-
 
 clean:
 	${RM_FR} ${FILES.o} ${DEBRIS}
