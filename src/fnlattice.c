@@ -86,6 +86,16 @@ extern void __fwrite_CONFIG(char *fn, sysz_t t, sysz_t N, lttc_t *s)
     fclose(fout);
 }
 /**
+ * write on file the lattice on the screen in binary (int8) format
+ * @param N (sysz_t) size of the lattice
+ * @param s (lttc_t *) the lattice array
+ * @return none
+ */
+extern void __fwrite_CONFIGsamefile(FILE **fout, sysz_t N, lttc_t *s)
+{
+    fwrite(s, sizeof(*s), N, *fout);
+}
+/**
  * write on file the ACF (auto-correlation function) of the system in binary
  * (double) format
  * @param fn (char *) string with the filename
@@ -200,6 +210,7 @@ extern void __printf_configfile(dtc_t d, char *config_fn)
     printf(_V _LARW __ "CONFIGURATION FILE CONTENTS" _N);
     printf(_T "tMC" _T "%" SCNu32"\n", d.tMC);
     printf(_T "N_M\t%" SCNu32"\n", d.N_M);
+    printf(_T "nconf\t%" SCNu32"\n", d.nconf);
     printf(_T "_m_sav\t%" SCNu32"\n", d._m_sav);
     printf(_T "Navg\t%" SCNu16"\n", d.Navg);
     printf(_T "L1\t%" SCNu16"\n", d.L1);
@@ -232,6 +243,8 @@ extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, smdtc_t d)
             sprintf(_dirsz, DIRobs __NIS__ _H "%s" _H "%s" _S, L1*L2, d._m_init, d._m_upd);
         else if (strcmp(_dirsz, "--gen_config") == 0)
             sprintf(_dirsz, DIRvbc __NIS__ _H "%s" _H "%s" _S, L1*L2, d._m_init, d._m_upd);
+        else if (strcmp(_dirsz, "--gen_unconf") == 0)
+            sprintf(_dirsz, DIRunc "%s" _H "%s" _S, d._m_init, d._m_upd);
     }
     else
     {
@@ -239,6 +252,8 @@ extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, smdtc_t d)
             sprintf(_dirsz, DIRobs __L1IS_L2IS__ _H "%s" _H "%s" _S, L1, L2, d._m_init, d._m_upd);
         else if (strcmp(_dirsz, "--gen_config") == 0)
             sprintf(_dirsz, DIRvbc __L1IS_L2IS__ _H "%s" _H "%s" _S, L1, L2, d._m_init, d._m_upd);
+        else if (strcmp(_dirsz, "--gen_unconf") == 0)
+            sprintf(_dirsz, DIRunc "%s" _H "%s" _S,d._m_init, d._m_upd);
     }
     mkdir(_dirsz, ACCESSPERMS);
 }
@@ -318,7 +333,7 @@ extern nnl_t compute_nn(sysz_t i, side_t L1, side_t L2)
  * @param nn (nnl_t *) the nearest neighbors array
  * @return none
  */
-extern void compute_nn_array(side_t L1, side_t L2, nnl_t *nn)
+extern void __compute_nn_array(side_t L1, side_t L2, nnl_t *nn)
 {
     sysz_t N = L1 * L2;
     for (sysz_t i = 0; i < N; i++)
@@ -414,15 +429,6 @@ extern void __ACFcomputation(double **acf, smdtc_t d1, obs_t O)
  * @param
  * @return
  */
-extern void __splash__(void)
-{
-    ;
-}
-/**
- * ...
- * @param
- * @return
- */
 extern void __measure_OBS(sysz_t t, sysz_t N, lttc_t *s, obs_t O)
 {
     O.magn[t] = m(N, s);
@@ -479,19 +485,14 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     lttc_t *s;
     nnl_t *nn;
     void (*__init__)(), (*__upd__)(), (*__measure__)();
-    // /*///////////////////////////////////////////// open and read config_file */
-    // d = __fscanf_configfile(config_fn);
+
     /*//////////////////////////////////////////////////// allocate variables */
     L1 = d.L1;
     L2 = d.L2;
     beta = d.b;
     N = (L1 * L2);
     tMC = d.tMC * N;
-    s = malloc(sizeof(*s) * N);
-    __challoc(s);
-    nn = malloc(sizeof(*nn) * N);
-    __challoc(nn);
-    compute_nn_array(L1, L2, nn);
+    __alloc_fill_snn(&s, &nn, L1, L2);
     /*///////////////////////////////////////////// create folder for results */
     sprintf(_dirsz, "--gen_config");
     __mkdir_syszN(_dirsz, L1, L2, d);
@@ -531,6 +532,80 @@ extern void __gen_config_(smdtc_t d, obs_t O)
         if (!(t % save_time))
             __fwrite_CONFIG(_dirb, t, N, s);
     }
+    // printf("\n");
+    free(s);
+    free(nn);
+}
+/**
+ * ...
+ */
+
+extern void __alloc_fill_snn(lttc_t **s, nnl_t **nn, side_t L1, side_t L2)
+{
+    sysz_t N = L1 * L2;
+    (*s) = malloc(sizeof(**s) * N);
+    __challoc(*s);
+    (*nn) = malloc(sizeof(**nn) * N);
+    __challoc(*nn);
+    __compute_nn_array(L1, L2, *nn);
+}
+
+extern void __gen_config2_(smdtc_t d)
+{
+    char _dirsz[256], _dirb[512];
+    double beta;
+    uint32_t save_time, nconf;
+    side_t L1, L2;
+    sysz_t N, tMC;
+    lttc_t *s;
+    nnl_t *nn;
+    void (*__init__)(), (*__upd__)(), (*__measure__)();
+    // /*///////////////////////////////////////////// open and read config_file */
+    // d = __fscanf_configfile(config_fn);
+    /*//////////////////////////////////////////////////// allocate variables */
+    L1 = d.L1;
+    L2 = d.L2;
+    beta = d.b;
+    N = (L1 * L2);
+    tMC = d.tMC * N;
+    __alloc_fill_snn(&s, &nn, L1, L2);
+    /*///////////////////////////////////////////// create folder for results */
+    sprintf(_dirsz, "--gen_unconf");
+    __mkdir_syszN(_dirsz, L1, L2, d);
+    /*///////////////////////////////////////////////////////// set init mode */
+    if (strcmp(d._m_init, "hs_unif") == 0)
+        __init__ = __init_hotstart_uniform;
+    else if (strcmp(d._m_init, "cs_unif") == 0)
+        __init__ = __init_coldstart;
+    else
+        __init__ = NULL;
+    /*///////////////////////////////// set update mode (wolff or metropolis) */
+    if (strcmp(d._m_upd, "algo_metro_s") == 0)
+        __upd__ = __upd_MEseq__scheme;
+    else if (strcmp(d._m_upd, "algo_metro_a") == 0)
+        __upd__ = __upd_MEasy__scheme;
+    else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
+        __upd__ = NULL;
+    /*///////////////////////////////////////////////////////// set save mode */
+    // printf("save config every: %" PRIu32 "\n", d._m_sav);
+    if (d._m_sav)
+        save_time = d._m_sav;
+    else
+        save_time = tMC + 1;
+    /*///////////////////////////////////////////// create folder for results */
+    nconf = (double) tMC / save_time;
+    printf("nconf = %u tmc = %u, svt = %u\n", nconf, tMC, save_time);
+    FILE *fout;
+    sprintf(buf, "%sISING2D-HSAS" _U __NIS__ _U __TIS__ _U "[%" PRIu32 "]" EXTBIN, _dirsz, N, 1./beta, nconf);
+    __F_OPEN(&fout, buf, "wb");
+    for (sysz_t i = 0; i < nconf; i++) // printf("\rt = %d", t);
+    {
+        __init__(N, s);
+        for (sysz_t t = 0; t < save_time; t++)
+            __upd__(beta, N, s, nn);
+        __fwrite_CONFIGsamefile(&fout, N, s);
+    }
+    fclose(fout);
     // printf("\n");
     free(s);
     free(nn);
@@ -593,38 +668,54 @@ extern void __compute_ACF(char *config_fn)
         N = (L1 * L2);
     }
 }
-// extern void __genUNcorr_CONFIG(char *config_fn)
-// {
-//     char _dirsz[256], _dirb[512];
-//     dtc_t d;
-//     smdtc_t d1;
-//     side_t L1, L2, Ls;
-//     sysz_t N, tMC;
-//     obs_t O;
-//     __fscanf_configfile(&d, config_fn);
-//     __set_localdtc(&d1, &d);
-//     L1 = d.L1;
-//     L2 = d.L2;
-//     Ls = d.Ls;
-//     N = (L1 * L2);
-//     while (N <= d.N_M)
-//     {
-//         sprintf(_dirsz, "--gen_unconf");
-//         __mkdir_syszN(_dirsz, L1, L2, d1);
-//         for (double b = d.b_m; b < d.b_M; b += d.b_s)
-//         {
-//             __mkdir_syszb(_dirb, b, _dirsz);
-//             __upd_localdtc(&d1, b, L1, L2);
-//             // read tauint and use it as tmC
-//             tMC = d1.tMC * N;
-//             for (uint32_t av = 0; av < d.Navg; av++)//here use not dnavg ma 
-//                 __gen_config_(d1, O);
-//         }
-//         L1 += Ls;
-//         L2 += Ls;
-//         N = (L1 * L2);
-//     }
-// }
+extern void __readTauint(smdtc_t *d1, dtc_t d, side_t L1, side_t L2)
+{
+    FILE *fti;
+    double tauint;
+    sprintf(buf, DIRobs __NIS__ _H "%s" _H "%s" _S __BTIS__ _S "tauint_avg=" FMT_na EXTBIN, L1*L2, d._m_init, d._m_upd, d1->b, d.Navg);
+    __F_OPEN(&fti, buf, "rb");
+    if (fread(&tauint, sizeof(double), ONE, fti) != ONE)
+    {
+        printf("PROBLEM\n");
+    }
+    d1->_m_sav = ceil(tauint);
+    printf("save = %u, tauint = %lf\n", d1->_m_sav, ceil(tauint));
+    fclose(fti);
+}
+
+extern void __genUNcorr_CONFIG(char *config_fn)
+{
+    char _dirsz[256], _dirb[512];
+    dtc_t d;
+    smdtc_t d1;
+    side_t L1, L2, Ls;
+    sysz_t N;
+    obs_t O;
+    __fscanf_configfile(&d, config_fn);
+    __set_localdtc(&d1, &d);
+    L1 = d.L1;
+    L2 = d.L2;
+    Ls = d.Ls;
+    N = (L1 * L2);
+    while (N <= d.N_M)
+    {
+        sprintf(_dirsz, "--gen_unconf");
+        __mkdir_syszN(_dirsz, L1, L2, d1);
+        for (double b = d.b_m; b < d.b_M; b += d.b_s)
+        {
+            __upd_localdtc(&d1, b, L1, L2);
+            __readTauint(&d1, d, L1, L2);
+            // read tauint and use it as savetime, tMC = savetime*nconf
+            d1.tMC = d1._m_sav * d.nconf;
+            printf("nconf = %u tmc = %u, svt = %u\n", d.nconf, d1.tMC, d1._m_sav);
+            for (uint32_t av = 0; av < d.nconf; av++)//here use not dnavg ma 
+                __gen_config2_(d1);
+        }
+        L1 += Ls;
+        L2 += Ls;
+        N = (L1 * L2);
+    }
+}
 
 
 
@@ -768,7 +859,7 @@ extern void __compute_ACF(char *config_fn)
 //  * @param nn the nearest neighbors array
 //  * @return none
 //  */
-// extern void compute_nn_array(side_t L1, side_t L2, nnl_t *nn)
+// extern void __compute_nn_array(side_t L1, side_t L2, nnl_t *nn)
 // {
 //     sysz_t N = L1 * L2;
 //     for (sysz_t i = 0; i < N; i++)
@@ -876,7 +967,7 @@ extern void __compute_ACF(char *config_fn)
 //     __challoc(s);
 //     nn = malloc(sizeof(*nn) * N);
 //     __challoc(nn);
-//     compute_nn_array(L1, L2, nn);
+//     __compute_nn_array(L1, L2, nn);
 //     /*///////////////////////////////////////////// create folder for results */
 //     if (L1 == L2)
 //         sprintf(dirsave, DIRvbc "N=%" PRIu32 _S, N);

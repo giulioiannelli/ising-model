@@ -1,2 +1,2 @@
 tMC,N_M,nconf,_m_sav,Navg,L1,L2,Ls,b_m,b_M,b_s,_m_init,_m_upd,_m_mea
-1,500,100,0,40,10,10,10,0.01,0.44,0.02,hs_unif,algo_metro_a,1
+1,200,3,1,20,10,10,10,0.01,0.44,0.02,hs_unif,algo_metro_a,1

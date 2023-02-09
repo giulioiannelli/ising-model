@@ -24,6 +24,15 @@ extern size_t strIn_(char *s, const char **ss)
             return id + 1;
     return 0;
 }
+/**
+ * ...
+ * @param
+ * @return
+ */
+extern void __splash__(void)
+{
+    ;
+}
 uint16_t strtou16(const char *s)
 {
     char c;

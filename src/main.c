@@ -14,18 +14,18 @@
 #include <imfnlib.h>
 #include <imrng.h>
 
+int MODE;
+md_t run[NMODES];
 char buf[1024];
 sfmt_t sfmt;
 uint32_t *seed_rand;
 FILE *f_log;
 
-const char *MODES[] = {"--print_c", "--check_sfmt", "--acf"};
-void (*FUNCS[])() = {__print_configf, __check_RNG, __compute_ACF};
+const char *MODES[] = {"--print_c", "--check_sfmt", "--acf", "--gen_unconf"};
+void (*FUNCS[])() = {__print_configf, __check_RNG, __compute_ACF, __genUNcorr_CONFIG};
 
 int main(int argc, char *argv[])
 {
-    int MODE;
-    md_t run[NMODES];
     for (int i = 0; i < NMODES; i++)
     {
         run[i].__mode__ = FUNCS[i];

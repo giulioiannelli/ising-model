@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     sprintf(buf, "res/N=%" PRIu32 "/", N);
     mkdir(buf, ACCESSPERMS);
     //
-    compute_nn_array(Lx, Ly, nn);
+    __compute_nn_array(Lx, Ly, nn);
     for (sysz_t t = 0; t < TMCMC; t++)
     {
         printf("\rt = %d", t);

@@ -8,7 +8,7 @@ FILES.c = ${srcFILES.c} ${SFMTFILES.c}
 FILES.o = ${FILES.c:.c=.o}
 PATHS.c := $(addprefix $(PATH_SRC), $(srcFILES.c)) $(addprefix $(PATH_SFMT), $(SFMTFILES.c))
 
-DIRS := res/ res/vbc res/obs res/log
+DIRS := res/ res/vbc res/obs res/log res/unconf
 $(shell mkdir -p $(DIRS))
 
 PROGRAM ?= ising-model-c

@@ -79,15 +79,16 @@
 #define DIRlog DIRres "log/"
 #define DIRvbc DIRres "vbc/"
 #define DIRobs DIRres "obs/"
+#define DIRunc DIRres "unconf/"
 /**/
-
-
 #define STR_bt "bt"
+#define STR_T "T"
 #define STR_N  "N"
 #define STR_L1 "L1"
 #define STR_L2 "L2"
 
 #define FMT_bt "%.3g"
+#define FMT_T "%.3g"
 #define FMT_na "%" PRIu16
 #define FMT_L  "%" PRIu16
 #define FMT_N  "%" PRIu32
@@ -96,11 +97,13 @@
 #define __L2IS STR_L2 _E                                             /* "L2=" */
 #define __NIS  STR_N  _E                                             /* "N="  */
 #define __BTIS STR_bt _E                                             /* "bt=" */
+#define __TIS  STR_T  _E                                              /* "T=" */
 
 #define __L1IS__ __L1IS FMT_L
 #define __L2IS__ __L2IS FMT_L
 #define __BTIS__ __BTIS FMT_bt
 #define __NIS__  __NIS  FMT_N
+#define __TIS__  __TIS  FMT_T
 
 #define __L1IS_L2IS__ __L1IS__ _U __L2IS__
 
@@ -139,10 +142,11 @@
 
 
 #define J 1.                /* coupling strenght*/
-#define ONE 1
+#define ONE 1               /* number one */
 #define TWO 2               /* number two */
 #define LENSRND 4           /* seed array for sfmt length */
 #define MAX_tMCMC 10        /**/
+#define Tc (2. / ln(1 + sqrt(2)))
 
 #define PRIconfSIGNED(x) printf("%+" PRIi8 " ", x);
 #define PRIconfUNSGND(x) printf("%"  PRIi8 " ", (x + 1) / 2);
@@ -156,6 +160,6 @@
 extern FILE *f_log;
 extern char buf[1024];
 
-#define NMODES 3
+#define NMODES 4
 
 #endif /* __IMDEFS_H_INC__ */

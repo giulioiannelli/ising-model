@@ -288,7 +288,7 @@ extern nnl_t compute_nn(sysz_t i, side_t L1, side_t L2)
  * @param nn (nnl_t *) the nearest neighbors array
  * @return none
  */
-extern void compute_nn_array(side_t L1, side_t L2, nnl_t *nn)
+extern void __compute_nn_array(side_t L1, side_t L2, nnl_t *nn)
 {
     sysz_t N = L1 * L2;
     for (sysz_t i = 0; i < N; i++)
@@ -454,7 +454,7 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     __challoc(s);
     nn = malloc(sizeof(*nn) * N);
     __challoc(nn);
-    compute_nn_array(L1, L2, nn);
+    __compute_nn_array(L1, L2, nn);
     /*///////////////////////////////////////////// create folder for results */
     sprintf(_dirsz, "--gen_config");
     __mkdir_syszN(_dirsz, L1, L2, N);
@@ -684,7 +684,7 @@ extern void __compute_ACF(char *config_fn)
 //  * @param nn the nearest neighbors array
 //  * @return none
 //  */
-// extern void compute_nn_array(side_t L1, side_t L2, nnl_t *nn)
+// extern void __compute_nn_array(side_t L1, side_t L2, nnl_t *nn)
 // {
 //     sysz_t N = L1 * L2;
 //     for (sysz_t i = 0; i < N; i++)
@@ -792,7 +792,7 @@ extern void __compute_ACF(char *config_fn)
 //     __challoc(s);
 //     nn = malloc(sizeof(*nn) * N);
 //     __challoc(nn);
-//     compute_nn_array(L1, L2, nn);
+//     __compute_nn_array(L1, L2, nn);
 //     /*///////////////////////////////////////////// create folder for results */
 //     if (L1 == L2)
 //         sprintf(dirsave, DIRvbc "N=%" PRIu32 _S, N);
