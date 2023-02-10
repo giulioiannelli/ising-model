@@ -1,39 +1,3 @@
-/*H*__C program file__**********************************************************
- * FILENAME: i1Dmkvp.c                                       DESIGN REF: I1DMP01
- *                                                              VERSION: A.01.00
- *
- * DESCTIPTION:
- *      ...
- *
- * PUBLIC FUNCTIONS:
- *      see -> head/dhnnlib.h
- *
- * NOTES:
- *      ...
- *
- *      SYSTEM SETTINGS ------------------------------------|
- *        |  os: Ubuntu 22.04.1 LTS x86_64                  |
- *        |  kernel: Linux 5.15.0-47-generic                |
- *        |  gcc version 11.2.0 (Ubuntu 11.2.0-19ubuntu1)   |
- *        --------------------------------------------------|
- *
- *      Copyleft G. Iannelli 2022.          No rights reserved.
- *          email: giulioiannelli.w@gmail.com
- *
- * COMPILATION:
- *   gcc -O3 -DSFMT_MEXP=19937 -o exe/a.o C/head/SFMT/SFMT.c C/i1Dmkvp.c
- *          -Wall -lm
- * EXECUTION:
- *   nohup exe/a.o in/exampleinput.txt >/dev/null 2>&1 &
- *
- * AUTHOR: Giulio Iannelli =========================== START DATE:   01 sep 2022
- *
- * CHANGES:
- *
- * REF NO   VERSION     DATE        WHO     DETAIL
- * C01/01   A.01.00     04nov22     GI      append to existing cfgs files
- *
- *H*/
 #include "head/dhnnlib.h"
 
 #define NARG 1 + 2
