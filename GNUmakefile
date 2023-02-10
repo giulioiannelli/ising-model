@@ -2,7 +2,7 @@
 
 PATH_SRC  = src/
 PATH_SFMT = dep/SFMT/
-srcFILES.c = main.c rngs.c fnlattice.c generic.c
+srcFILES.c = ising-lattice.c rngs.c fnlattice.c generic.c
 SFMTFILES.c = SFMT.c
 FILES.c = ${srcFILES.c} ${SFMTFILES.c}
 FILES.o = ${FILES.c:.c=.o}
@@ -11,7 +11,7 @@ PATHS.c := $(addprefix $(PATH_SRC), $(srcFILES.c)) $(addprefix $(PATH_SFMT), $(S
 DIRS := res/ res/vbc res/obs res/log res/unconf
 $(shell mkdir -p $(DIRS))
 
-PROGRAM ?= ising-model-c
+PROGRAM ?= ising-lattice-c
 CC        = gcc
 GFLAGS    = -g
 OFLAGS    = -O3
