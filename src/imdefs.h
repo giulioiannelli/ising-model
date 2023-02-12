@@ -109,6 +109,17 @@
 
 
 
+
+
+
+
+#define MARKOVCHAIN "MARKOVCHAIN"
+#define ISING2DHSAS "ISING2D-HSAS"
+
+
+
+
+
 #define PFNARGC _N_VT "wrong number of arguments (argc) passed."
 #define PFCLU64 _N_VT "expected uint64 type as command line input."
 #define PFCLU32 _N_VT "expected uint32 type as command line input."
@@ -161,5 +172,59 @@ extern FILE *f_log;
 extern char buf[1024];
 
 #define NMODES 4
+#define NMODESC 4
 
 #endif /* __IMDEFS_H_INC__ */
+
+
+
+
+// void f1_mod1(...)
+// {
+//     //do domething
+// }
+
+// void f1_mod2(...)
+// {
+//     //do something else
+// }
+
+// void f2_mod1(...)
+// {
+//     //do something 2
+// }
+
+// void f2_mod2(...)
+// {
+//     //do something 2
+// }
+
+// void __thefunctioniwouldlike(char *f1n, void *__f1__, char *f2n, *__f2__)
+// {
+//     if (strcmp(f1n, "mod1") == 0)
+//         __f1__ = f1_mod1;
+//     else if (strcmp(f1n, "mod2") == 0)
+//         __f1__ = f1_mod2;
+//     else 
+//         __f1__ = NULL;
+//     if (strcmp(f2n, "mod1") == 0)
+//         __f2__ = f2_mod1;
+//     else if (strcmp(f1n, "mod2") == 0)
+//         __f2__ = f2_mod2;
+//     else 
+//         __f1__ = NULL;
+// }
+
+
+// void extfunc(...)
+// {
+//     // ...
+//     char *f1n = "mod1";
+//     char *f2n = "mod2";
+//     void (*__f1__)(), (*__f2__)();
+//     __thefunctioniwouldlike(f1n, __f1__, f2n, __f2__);
+//     // execute f1_mod1
+//     __f1__(...);
+//     // execute f2_mod2
+//     __f2__(...);
+// }

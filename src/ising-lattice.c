@@ -11,8 +11,8 @@ sfmt_t sfmt;
 uint32_t *seed_rand;
 FILE *f_log;
 
-const char *MODES[] = {"--print_c", "--check_sfmt", "--acf", "--gen_unconf"};
-void (*FUNCS[])() = {__print_configf, __check_RNG, __compute_ACF, __genUNcorr_CONFIG};
+const char *MODES[] = {"--print_c", "--check_sfmt", "--acf", "--gen_unconf"};//"--gen_kconf"
+void (*FUNCS[])() = {__print_configf, __check_RNG, __compute_ACF, __genUNcorr_CONFIG};//__genK_CONFIG
 
 int main(int argc, char *argv[])
 {

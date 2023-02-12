@@ -5,6 +5,7 @@
 #ifndef __IMDTLIB_H_INC__
 #define __IMDTLIB_H_INC__
 
+typedef void (__vtmpf_t)();
 typedef int8_t lttc_t;
 typedef uint16_t side_t;
 typedef uint16_t avg_t;
@@ -57,6 +58,19 @@ typedef struct data_config
     char _m_upd[128];
     bool _m_mea;
 } dtc_t;
+
+
+typedef struct dataStruct_Nandbeta
+{
+    uint32_t K;
+    sysz_t N;
+    avg_t Navg;
+    double b;
+    char _m_init[128];
+    char _m_upd[128];
+} dsNb_t;
+
+
 
 extern const char *MODES[];
 

@@ -1,22 +1,27 @@
-#include "head/dhnnlib.h"
+#include <stdio.h>
+#include <imdefs.h>
+#include <imtdlib.h>
+#include <imfnlib.h>
+#include <imrng.h>
 
-#define NARG 1 + 2
-#define PROGN NMC1D
+int MODE;
+md_t run[NMODESC];
+char buf[1024];
+sfmt_t sfmt;
+uint32_t *seed_rand;
+FILE *f_log;
 
-#define LSEED1 0xBBBBBB
-#define LSEED2 0x1BACF5
+const char *MODES[] = {""};
+void (*FUNCS[])() = {__print_configf, __check_RNG, __compute_ACF, __genUNcorr_CONFIG};
 
 int main(int argc, char *argv[])
 {
-    /* check argc - make logfile - initialize the sfmt rng */
-    check_argc(argc, NARG);
-    sprintf(buf, DIRLOGF PROGN _U __NIS "%s" _U __TIS "%s" EXTLOG,
-            argv[1], argv[2]);
-    make_log(argc, buf, PROGN, argv);
-    seed_rand[2] = LSEED1;
-    seed_rand[3] = LSEED2;
-    sfmt_init_by_array(&sfmt, seed_rand, LENSRND);
-    /* variable declaration - acquisition from command line */
+    /*///////////////////////////////////////////////////////// open log file */
+    __MAKElog(argc, argv);
+    /*////////////////////////////////////////////////////////// seed the RNG */
+    __setSFMT_seed_rand();
+
+
     FILE *f_out;
     uint64_t effKNUM, missingK;
     /* get variable from command line */

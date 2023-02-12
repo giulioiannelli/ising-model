@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <sys/stat.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <math.h>
 #include <string.h>
 #include <inttypes.h>
@@ -484,7 +484,8 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     sysz_t N, tMC;
     lttc_t *s;
     nnl_t *nn;
-    void (*__init__)(), (*__upd__)(), (*__measure__)();
+    __vtmpf_t *__init__, *__upd__, *__measure__;
+    // void (*__init__)(), (*__upd__)(), (*__measure__)();
 
     /*//////////////////////////////////////////////////// allocate variables */
     L1 = d.L1;
@@ -496,20 +497,8 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     /*///////////////////////////////////////////// create folder for results */
     sprintf(_dirsz, "--gen_config");
     __mkdir_syszN(_dirsz, L1, L2, d);
-    /*///////////////////////////////////////////////////////// set init mode */
-    if (strcmp(d._m_init, "hs_unif") == 0)
-        __init__ = __init_hotstart_uniform;
-    else if (strcmp(d._m_init, "cs_unif") == 0)
-        __init__ = __init_coldstart;
-    else
-        __init__ = NULL;
-    /*///////////////////////////////// set update mode (wolff or metropolis) */
-    if (strcmp(d._m_upd, "algo_metro_s") == 0)
-        __upd__ = __upd_MEseq__scheme;
-    else if (strcmp(d._m_upd, "algo_metro_a") == 0)
-        __upd__ = __upd_MEasy__scheme;
-    else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
-        __upd__ = NULL;
+    // // /*///////////////////////////////////////////////////////// set init mode */
+    __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
     /*///////////////////////////////////////////////////////// set save mode */
     // printf("save config every: %" PRIu32 "\n", d._m_sav);
     if (d._m_sav)
@@ -552,6 +541,7 @@ extern void __alloc_fill_snn(lttc_t **s, nnl_t **nn, side_t L1, side_t L2)
 
 extern void __gen_config2_(smdtc_t d)
 {
+    FILE *fout;
     char _dirsz[256], _dirb[512];
     double beta;
     uint32_t save_time, nconf;
@@ -559,7 +549,8 @@ extern void __gen_config2_(smdtc_t d)
     sysz_t N, tMC;
     lttc_t *s;
     nnl_t *nn;
-    void (*__init__)(), (*__upd__)(), (*__measure__)();
+    // __vtmpf_t *__init__, *__upd__, *__measure__;
+    __vtmpf_t *__init__, *__upd__, *__measure__;
     // /*///////////////////////////////////////////// open and read config_file */
     // d = __fscanf_configfile(config_fn);
     /*//////////////////////////////////////////////////// allocate variables */
@@ -573,19 +564,7 @@ extern void __gen_config2_(smdtc_t d)
     sprintf(_dirsz, "--gen_unconf");
     __mkdir_syszN(_dirsz, L1, L2, d);
     /*///////////////////////////////////////////////////////// set init mode */
-    if (strcmp(d._m_init, "hs_unif") == 0)
-        __init__ = __init_hotstart_uniform;
-    else if (strcmp(d._m_init, "cs_unif") == 0)
-        __init__ = __init_coldstart;
-    else
-        __init__ = NULL;
-    /*///////////////////////////////// set update mode (wolff or metropolis) */
-    if (strcmp(d._m_upd, "algo_metro_s") == 0)
-        __upd__ = __upd_MEseq__scheme;
-    else if (strcmp(d._m_upd, "algo_metro_a") == 0)
-        __upd__ = __upd_MEasy__scheme;
-    else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
-        __upd__ = NULL;
+    __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
     /*///////////////////////////////////////////////////////// set save mode */
     // printf("save config every: %" PRIu32 "\n", d._m_sav);
     if (d._m_sav)
@@ -595,8 +574,8 @@ extern void __gen_config2_(smdtc_t d)
     /*///////////////////////////////////////////// create folder for results */
     nconf = (double) tMC / save_time;
     printf("nconf = %u tmc = %u, svt = %u\n", nconf, tMC, save_time);
-    FILE *fout;
-    sprintf(buf, "%sISING2D-HSAS" _U __NIS__ _U __TIS__ _U "[%" PRIu32 "]" EXTBIN, _dirsz, N, 1./beta, nconf);
+    //here ISING2DHSAS should become P_type which depends on config file
+    sprintf(buf, "%s" ISING2DHSAS _U __NIS__ _U __TIS__ _U "[%" PRIu32 "]" EXTBIN, _dirsz, N, 1./beta, nconf);
     __F_OPEN(&fout, buf, "wb");
     for (sysz_t i = 0; i < nconf; i++) // printf("\rt = %d", t);
     {
@@ -716,7 +695,134 @@ extern void __genUNcorr_CONFIG(char *config_fn)
         N = (L1 * L2);
     }
 }
+// extern void  __fscanf_Nb_configfile(dsNb_t *d, char *config_fn)
+// {
+//     FILE *fconf;
+//     char row[1024];
+//     char *tok, *endptr;
+//     __F_OPEN(&fconf, config_fn, "r+");
+//     if (fgets(row, 1024, fconf) == NULL)
+//     {
+//         ;
+//     }
+//     if (fgets(row, 1024, fconf) == NULL)
+//     {
+//         ;
+//     }
+//     tok = strtok(row, ",");
+//     d->K = strtou32(tok);
+//     tok = strtok(NULL, ",");
+//     d->N = strtou32(tok);
+//     tok = strtok(NULL, ",");
+//     d->Navg = strtou16(tok);
+//     tok = strtok(NULL, ",");
+//     d->b = strtod(tok, &endptr);
+//     tok = strtok(NULL, ",");
+//     strcpy(d->_m_init, tok);
+//     tok = strtok(NULL, ",");
+//     strcpy(d->_m_upd, tok);
+//     tok = strtok(NULL, ",");
+//     fclose(fconf);
+// }
+/**
+ * mode selection in gen_configmeasure 
+ * @param 
+ * @return 
+ */
+extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
+                                   char *upd_mode, __vtmpf_t **__ptrupd__)
+{
+    if (strcmp(init_mode, "hs_unif") == 0)
+        *__ptrinit__ = __init_hotstart_uniform;
+    else if (strcmp(init_mode, "cs_unif") == 0)
+        *__ptrinit__ = __init_coldstart;
+    else
+        *__ptrinit__ = NULL;
+    /*///////////////////////////////// set update mode (wolff or metropolis) */
+    if (strcmp(upd_mode, "algo_metro_s") == 0)
+        *__ptrupd__ = __upd_MEseq__scheme;
+    else if (strcmp(upd_mode, "algo_metro_a") == 0)
+        *__ptrupd__ = __upd_MEasy__scheme;
+    else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
+        *__ptrupd__ = NULL;
+}
+// /**
+//  * generate Ising 2D lattice configuration(s) following instructions provided in
+//  * configuration file specified by string config_fn
+//  * @param config_fn configuration file name
+//  * @return difference of enegry, if negative accept the proposed move
+//  */
+// extern void __gen_configmeasure_(dsNb_t d, obs_t O)
+// {
+//     char _dirsz[256], _dirb[512];
+//     double beta;
+//     uint32_t save_time;
+//     side_t L1, L2;
+//     sysz_t N, tMC;
+//     lttc_t *s;
+//     nnl_t *nn;
+//     void (*__init__)(), (*__upd__)(), (*__measure__)();
 
+//     /*//////////////////////////////////////////////////// allocate variables */
+//     L1 = d.L1;
+//     L2 = d.L2;
+//     beta = d.b;
+//     N = (L1 * L2);
+//     tMC = d.tMC * N;
+//     __alloc_fill_snn(&s, &nn, L1, L2);
+//     /*///////////////////////////////////////////// create folder for results */
+//     sprintf(_dirsz, "--gen_config");
+//     __mkdir_syszN(_dirsz, L1, L2, d);
+//     /*///////////////////////////////////////////////////////// set init mode */
+//     if (strcmp(d._m_init, "hs_unif") == 0)
+//         __init__ = __init_hotstart_uniform;
+//     else if (strcmp(d._m_init, "cs_unif") == 0)
+//         __init__ = __init_coldstart;
+//     else
+//         __init__ = NULL;
+//     /*///////////////////////////////// set update mode (wolff or metropolis) */
+//     if (strcmp(d._m_upd, "algo_metro_s") == 0)
+//         __upd__ = __upd_MEseq__scheme;
+//     else if (strcmp(d._m_upd, "algo_metro_a") == 0)
+//         __upd__ = __upd_MEasy__scheme;
+//     else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
+//         __upd__ = NULL;
+//     /*///////////////////////////////////////////// create folder for results */
+//     __mkdir_syszb(_dirb, beta, _dirsz);
+//     __init__(N, s);
+//     for (sysz_t t = 1; t < tMC + 1; t++) // printf("\rt = %d", t);
+//     {
+//         // printf("\rt = %d", t);
+//         __measure_OBS(t - 1, N, s, O);
+//         __upd__(beta, N, s, nn);
+
+//     }
+//     // printf("\n");
+//     free(s);
+//     free(nn);
+// }
+// extern void  __makeTauint(dsNb_t d)
+// {
+//     sprintf(buf, DIRobs __NIS__ _H "%s" _H "%s" _S __BTIS__ _S "tauint_avg=" FMT_na EXTBIN, d.N, d._m_init, d._m_upd, d.b, d.Navg);
+//     if (F_NEXIST(buf))
+//     {
+//         fprintf(f_log, MSGINFO PIFNXST "%s", buf);
+//         char *args1Dtauint[] = {(char *)NI1DT, strN, strTi, NULL};
+//         run_sub(3, args1Dtauint);
+//     }
+// }
+// extern void __genK_CONFIG(char *config_fn)
+// {
+// // to do aggiusto tmc per decidere quante configurazioni far stampare a gengonfig2
+//     // leggo il file .config_1mkvp dove c'e K (numero di configurazioni da avere)
+//     // N lunghezza della configurazione, beta: temperatura della configurazione
+//     char _dirsz[256], _dirb[512];
+//     dsNb_t d;
+//     __fscanf_Nb_configfile(&d, config_fn);
+//     __makeTauint(d);// make tuint if not there
+//     d.tMC = d._m_sav * d.nconf;
+//     __gen_config2_(d);
+// }
 
 
 

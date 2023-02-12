@@ -61,5 +61,9 @@ extern void __gen_config2_(smdtc_t d);
 extern void __compute_ACF(char *config_fn);
 extern void __genUNcorr_CONFIG(char *config_fn);
 
+extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
+                                   char *upd_mode, __vtmpf_t **__ptrupd__);
+
+
 #endif /* __IMFNLIB_H_INC__ */
 

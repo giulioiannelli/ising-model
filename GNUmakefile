@@ -27,11 +27,11 @@ INC_PATH3 = -Idep/SFMT
 INC_PATHS = ${INC_PATH1} ${INC_PATH2} ${INC_PATH3}
 ALLFLAGS  = ${GFLAGS} ${OFLAGS} ${DSFMTFLAG} ${WFLAGS} ${INC_PATHS}
 
-all:
+# all: ${PROGRAML} ${PROGRAMC}
 ${PROGRAML}: ${PATHS.c}
 	${CC} ${ALLFLAGS} -o $@ $^ ${LMFLAG}
 
-# ${PROGRAMC}: src/
+# ${PROGRAMC}: src/ising-chain-mc.c src/fnchain.c src/generic.c
 # 	${CC} ${ALLFLAGS} -o $@ $^ ${LMFLAG}
 
 DEBRIS = a.out *~ 
