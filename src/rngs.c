@@ -28,7 +28,7 @@ void __check_RNG(void)
 {
     for (int i = 0; i < PRIrngN; i++)
     {
-        printf("rand_%d: (double) %.3g, (uint64_t) %" PRIu64 "\n",
+        printf("rand_%d: (double) %.3g," _T "(uint64_t) %" PRIu64 "\n",
                i, RNG_dbl(), RNG_u64());
     }
 }

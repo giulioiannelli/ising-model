@@ -92,12 +92,13 @@ extern uint32_t softplus_u32(int32_t x)
 /** check if a string is in an array of strings. If so return the index of the
  * array corresponding to the srting element.
  * @param s (char *) the string to be checked
+ * @param len (size_t) number of strings in array
  * @param ss (char **) the array of strings
  * @return (size_t) 0 if the string is not in the array, index + 1 if there is.
  */
-extern size_t strIn_(char *s, const char **ss)
+extern size_t strIn_(char *s, size_t len, const char **ss)
 {
-    for (size_t id = 0; id < ARRAY_SIZE_2D(ss); id++)
+    for (size_t id = 0; id < len; id++)
         if (!(strncmp(ss[id], s, strlen(s))))
             return id + 1;
     return 0;
@@ -170,8 +171,8 @@ extern void __get_row_fgets(FILE **fc, char *row)
 }
 extern void __2get_row_fgets(FILE **fc, char *row)
 {
-    __get_row_fgets(*fc, row);
-    __get_row_fgets(*fc, row);
+    __get_row_fgets(fc, row);
+    __get_row_fgets(fc, row);
 }
 
 

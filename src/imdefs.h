@@ -119,13 +119,13 @@
 
 /* operating modes list*/
 #define __MODE  "--"
-#define MODE_PRINTC__ "print_c"
-#define MODE_CHKRNG__ "check_sfmt"
-#define MODE_ACFCOR__ "acf"
-#define MODE_GENCON__ "gen_conf"
-#define MODE_GENUNC__ "gen_unconf"
+#define MODE_PRINTC__ "pt_osconf"
+#define MODE_CHKRNG__ "chk_rsfmt"
+#define MODE_ACFCOR__ "cpt_acfti"
+#define MODE_GENCON__ "gen_sconf"
+#define MODE_GENUNC__ "gen_uconf"
 #define MODE_KGENCN__ "gen_kconf"
-#define MODE_PRINTC __MODE MODE_PRINTC__ /* "--print_c" */
+#define MODE_PRINTC __MODE MODE_PRINTC__ /* "--print_conf" */
 #define MODE_CHKRNG __MODE MODE_CHKRNG__ /* "--check_sfmt" */
 #define MODE_ACFCOR __MODE MODE_ACFCOR__ /* "--acf" */
 #define MODE_GENCON __MODE MODE_GENCON__ /* "--gen_conf" */
@@ -204,5 +204,11 @@
 #define STR256 256
 #define STR512 512
 #define STR1024 1024
+
+#define STR_TOK_COMMA strtok(NULL, ",")
+
+#define HEADER_DT_SMDTC_I2D "K,L1,L2,Navg,b,_m_init,_m_upd\n"
+#define HEADER_DT_DTC_I2D "tMC,N_M,nconf,_m_sav,Navg,L1,L2,Ls,b_m,b_M,b_s,_m_mea,_m_init,_m_upd\n"
+#define HEADER_DT_IMCD_I2D "<todo>"
 
 #endif /* __IMDEFS_H_INC__ */

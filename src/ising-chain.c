@@ -12,7 +12,7 @@ uint32_t *seed_rand;
 FILE *f_log;
 
 // const char *MODES[] = {""};
-// void (*FUNCS[])() = {__print_configf, __check_RNG};
+// void (*FUNCS[])() = {__print_conf, __check_RNG};
 
 int main(int argc, char *argv[])
 {

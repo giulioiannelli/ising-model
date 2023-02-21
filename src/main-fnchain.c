@@ -5,7 +5,7 @@
 #include <imfnlib.h>
 #include <imclib.h>
 
-extern void __gen_K_conf(char *config_fn)
+extern void __gen_kconf(char *config_fn)
 {
     imcd_t d;
     __fscanf_Nb_configfile(&d, config_fn);

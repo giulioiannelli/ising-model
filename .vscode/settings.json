@@ -29,7 +29,8 @@
         "vector": "c",
         "string_view": "c",
         "initializer_list": "c",
-        "imdtlib.h": "c"
+        "imdtlib.h": "c",
+        "imllib.h": "c"
     },
     "cmake.configureOnOpen": true,
     "editor.rulers": [80, 120]

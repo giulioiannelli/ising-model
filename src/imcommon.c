@@ -6,6 +6,8 @@
 #include <imfnlib.h>
 #include <imclib.h>
 #include <imrng.h>
+
+char row[STR1024];
 /*////////////////////////////////////////////////////// I/O SYSTEM FUNCTIONS */
 //
 /** write on file the acf (auto-correlation function) of the system in binary

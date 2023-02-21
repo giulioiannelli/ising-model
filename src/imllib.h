@@ -6,6 +6,21 @@
 #ifndef __IMLLIB_H_INC__
 #define __IMLLIB_H_INC__
 
+extern void __fscanf_dtc(FILE **, dtc_t *); /* scan config files */
+extern void __fscanf_smdtc(FILE **, smdtc_t *);
+/* print config files */
+extern void __printf_dtc(dtc_t);
+extern void __printf_smdtc(smdtc_t);
+/* read and store config */
+extern void __read_dtc(char *, dtc_t *);
+extern void __read_smdtc(char *, smdtc_t *);
+
+
+
+
+
+
+
 extern void __set_localdtc(smdtc_t *d1, dtc_t *d);
 extern void __upd_localdtc(smdtc_t *d1, double b);
 
@@ -30,7 +45,10 @@ extern void __setmeasureOBS(smdtc_t d, vtmpf_t **mf);
 
 extern void __mkdir_obsN(char *_dirat, smdtc_t d);
 
-extern void  __fscanf_Nb_configfile(smdtc_t *d, char *config_fn);
+
+
+
+
 extern void __ifNETauint_makeit(smdtc_t d);
 extern void __Tauint(smdtc_t d);
 extern void __readTauint(smdtc_t *d);
@@ -45,7 +63,8 @@ extern void __gen_config_(smdtc_t dtc, obs_t O);
 extern void __wbrite_nconf_d(smdtc_t d);
 extern void __compute_acf(char *config_fn);
 extern void __genUNcorr_CONFIG(char *config_fn);
-extern void __gen_K_conf(char *config_fn);
+
+
 
 extern void __find_effKCFGS(smdtc_t *d);
 extern void __get_P_TYPE(smdtc_t d, char *ptype);
@@ -57,5 +76,10 @@ extern void __rename_cfgpth(smdtc_t d, char *_dirsz, char *P_TYPE);
 
 extern void __setfunc__init__upd__(char *init_mode, vtmpf_t **__ptrinit__,
                                    char *upd_mode, vtmpf_t **__ptrupd__);
+
+/* main functions */
+extern void __print_conf(char *);
+extern void __gen_kconf(char *);
+
 
 #endif

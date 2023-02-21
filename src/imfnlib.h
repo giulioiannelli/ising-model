@@ -23,9 +23,8 @@ extern void __allocate_acfrel(sysz_t tMC, avg_t Navg, double **acf, double **acf
 
 
 
-
 extern void __splash__(void);
-extern size_t strIn_(char *, const char **);
+extern size_t strIn_(char *, size_t, const char **);
 extern double sum_vs(size_t n, double *v);
 extern double avg(size_t n, double *v);
 extern uint16_t strtou16(const char *s);
@@ -50,11 +49,12 @@ extern void __fwrite_CONFIG(char *fn, sysz_t t, sysz_t N, hlttc_t *s);
 extern void __fwrite_cfg(FILE **fout, sysz_t N, hlttc_t *s);
 extern void __fwrite_acf(char *fn, sysz_t tMC, avg_t Navg, double *acf);
 extern void __fwrite_ti(char *dir, avg_t Navg, double ti);
-extern void __fscanf_configfile(dtc_t *dtc, char *config_fn);
+
 extern void __set_localdtc(smdtc_t *d1, dtc_t *d);
-extern void __printf_configfile(dtc_t d, char *config_fn);
-extern void __print_configf(char *config_fn);
+
+
 extern void __get_row_fgets(FILE **fc, char *row);
+extern void __2get_row_fgets(FILE **fc, char *row);
 
 extern double magn(sysz_t N, hlttc_t *s);
 extern double m_avg(sysz_t tMC, double *m);

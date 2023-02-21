@@ -10,6 +10,10 @@
 #include <imllib.h>
 #include <imrng.h>
 
+
+const char *DT_DTC_I2D[]={MODE_ACFCOR__, MODE_GENCON__};
+const char *DT_SMDTC_I2D[]={MODE_KGENCN__};
+
 /**
  * compute the nearest neighbor given a specific site of the lattice
  * @param i (sysz_t) the lattice site
@@ -126,106 +130,70 @@ extern void __setfunc__init__upd__(char *init_mode, vtmpf_t **__ptrinit__,
     else if (strcmp(init_mode, _M_CSU) == 0)
         *__ptrinit__ = __init_coldstart;
     else
+    {
         *__ptrinit__ = NULL;
+        // e mettici un maledetto messaggio di errore
+    }
     if (strcmp(upd_mode, _M_MEHA_SS) == 0)
         *__ptrupd__ = __upd_MEHA_ss;
     else if (strcmp(upd_mode, _M_MEHA_SA) == 0)
         *__ptrupd__ = __upd_MEHA_sa;
     else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
+    {
         *__ptrupd__ = NULL;
+        // e mettici un maledetto messaggio di errore
+    }
 }
 
-/**
- * acquire from config file the d struct with allthe settings for the program
- * @param config_fn (char *) configuration file name
- * @return (dtc_t) the struct with configurational settings
+/** acquire from config file the d struct with allthe settings for the program
+ * @param fc (FILE **) configuration file pointer defereced
+ * @param d (dtc_t *) the data struct for config files
+ * @return (void) none
  */
-extern void __fscanf_configfile(dtc_t *d, char *config_fn)
+extern void __fscanf_dtc(FILE **fc, dtc_t *d)
 {
-    // FILE *fconf;
-    // int _mdmea;
-    // __F_OPEN(&fconf, config_fn, "r+");
-    // if (fscanf(fconf, "%" SCNu32 "%" SCNu32 "%" SCNu32,
-    //            &d->tMC, &d->N_M, &d->_m_sav) != 3)
-    //     printf("Error in config file\n");
-    // if (fscanf(fconf, "%" SCNu16 "%" SCNu16 "%" SCNu16 "%" SCNu16,
-    //            &d->Navg, &d->L1, &d->L2, &d->Ls) != 4)
-    //     printf("Error in config file\n");
-    // if (fscanf(fconf, "%lf%lf%lf", &d->b_m, &d->b_M, &d->b_s) != 3)
-    //     printf("Error in config file\n");
-    // if (fscanf(fconf, "%s", d->_m_init) != 1)
-    //     printf("Error in config file\n");
-    // if (fscanf(fconf, "%s", d->_m_upd) != 1)
-    //     printf("Error in config file\n");
-    // if (fscanf(fconf, "%d", &_mdmea) != 1)
-    //     printf("Error in config file\n");
-    // else
-    //     d->_m_mea = _mdmea;
-    // fclose(fconf);
-    FILE *fconf;
-    char row[1024];
-    char *tok, *endptr;
-    __F_OPEN(&fconf, config_fn, "r+");
-    if (fgets(row, 1024, fconf) == NULL)
-    {
-        ;
-    }
-    if (fgets(row, 1024, fconf) == NULL)
-    {
-        ;
-    }
-    tok = strtok(row, ",");
-    d->tMC = strtou32(tok);
-    tok = strtok(NULL, ",");
-    d->N_M = strtou32(tok);
-    tok = strtok(NULL, ",");
-    d->nconf = strtou16(tok);
-    tok = strtok(NULL, ",");
-    d->_m_sav = strtou32(tok);
-    tok = strtok(NULL, ",");
-    d->Navg = strtou16(tok);
-    tok = strtok(NULL, ",");
-    d->L1 = strtou16(tok);
-    tok = strtok(NULL, ",");
-    d->L2 = strtou16(tok);
-    tok = strtok(NULL, ",");
-    d->Ls = strtou16(tok);
-    tok = strtok(NULL, ",");
-    d->b_m = strtod(tok, &endptr);
-    tok = strtok(NULL, ",");
-    d->b_M = strtod(tok, &endptr);
-    tok = strtok(NULL, ",");
-    d->b_s = strtod(tok, &endptr);
-    tok = strtok(NULL, ",");
-    strcpy(d->_m_init, tok);
-    tok = strtok(NULL, ",");
-    strcpy(d->_m_upd, tok);
-    tok = strtok(NULL, ",");
-    d->_m_mea = (int) strtol(tok, (char **)NULL, 10);
-    fclose(fconf);
+    char *ep;
+    __get_row_fgets(fc, row);
+    d->tMC = strtou32(strtok(row, ","));
+    d->N_M = strtou32(STR_TOK_COMMA);
+    d->K = strtou16(STR_TOK_COMMA);
+    d->_m_sav = strtou32(STR_TOK_COMMA);
+    d->Navg = strtou16(STR_TOK_COMMA);
+    d->L1 = strtou16(STR_TOK_COMMA);
+    d->L2 = strtou16(STR_TOK_COMMA);
+    d->Ls = strtou16(STR_TOK_COMMA);
+    d->b_m = strtod(STR_TOK_COMMA, &ep);
+    d->b_M = strtod(STR_TOK_COMMA, &ep);
+    d->b_s = strtod(STR_TOK_COMMA, &ep);
+    d->_m_mea = (bool) strtol(STR_TOK_COMMA, (char **)NULL, 10);
+    strcpy(d->_m_init, STR_TOK_COMMA);
+    strcpy(d->_m_upd, STR_TOK_COMMA);
 }
-extern void __set_localdtc(smdtc_t *d1, dtc_t *d)
+/** scan from configuration file the single realization struct
+ * @param fc (FILE **) configuration file pointer defereced
+ * @param d (smdtc_t *) the data struct for single config files
+ * @return (void) none
+ */
+extern void __fscanf_smdtc(FILE **fc, smdtc_t *d)
 {
-    d1->L1 = d->L1;
-    d1->L2 = d->L2;
-    d1->N = d->L1 * d->L2;
-    d1->tMC = d->tMC;
-    d1->_m_mea = d->_m_mea;
-    d1->_m_sav = d->_m_sav;
-    strcpy(d1->_m_init, d->_m_init);
-    strcpy(d1->_m_upd, d->_m_upd);
+    char *ep;
+    __get_row_fgets(fc, row);
+    d->tMC = strtou32(strtok(row, ","));
+    d->L1 = strtou16(STR_TOK_COMMA);
+    d->L2 = strtou16(STR_TOK_COMMA);
+    d->N = d->L1 * d->L2;
+    d->tMC = d->N;
+    d->Navg = strtou16(STR_TOK_COMMA);
+    d->b = strtod(STR_TOK_COMMA, &ep);;
+    strcpy(d->_m_init, STR_TOK_COMMA);
+    strcpy(d->_m_upd, STR_TOK_COMMA);
 }
-extern void __upd_localdtc(smdtc_t *d1, double b)
-{           
-    d1->b = b;
-}
-extern void __printf_configfile(dtc_t d, char *config_fn)
+extern void __printf_dtc(dtc_t d)
 {
-    __fscanf_configfile(&d, config_fn);
     printf(_V _LARW __ "CONFIGURATION FILE CONTENTS" _N);
     printf(_T "tMC" _T "%" SCNu32"\n", d.tMC);
     printf(_T "N_M\t%" SCNu32"\n", d.N_M);
-    printf(_T "nconf\t%" SCNu32"\n", d.nconf);
+    printf(_T "K\t%" SCNu32"\n", d.K);
     printf(_T "_m_sav\t%" SCNu32"\n", d._m_sav);
     printf(_T "Navg\t%" SCNu16"\n", d.Navg);
     printf(_T "L1\t%" SCNu16"\n", d.L1);
@@ -238,15 +206,57 @@ extern void __printf_configfile(dtc_t d, char *config_fn)
     printf(_T "_m_upd\t%s\n", d._m_upd);
     printf(_T "_m_mea\t%d\n", d._m_mea);
 }
-extern void __print_configf(char *config_fn)
+extern void __printf_smdtc(smdtc_t d)
 {
-    dtc_t d;
-    printf("debug2\n");
-    __fscanf_configfile(&d, config_fn);
-    printf("debug3\n");
-    __printf_configfile(d, config_fn);
-    printf("debug4\n");
+    printf(_V _LARW __ "CONFIGURATION FILE CONTENTS" _N);
+    printf(_T "tMC" _T "%" SCNu32"\n", d.tMC);
+    printf(_T "K\t%" SCNu32"\n", d.K);
+    printf(_T "_m_sav\t%" SCNu32"\n", d._m_sav);
+    printf(_T "Navg\t%" SCNu16"\n", d.Navg);
+    printf(_T "L1\t%" SCNu16"\n", d.L1);
+    printf(_T "L2\t%" SCNu16"\n", d.L2);
+    printf(_T "_m_init\t%s\n", d._m_init);
+    printf(_T "_m_upd\t%s\n", d._m_upd);
+    printf(_T "_m_mea\t%d\n", d._m_mea);
 }
+extern void __read_dtc(char *config_fn, dtc_t *d)
+{
+    FILE *fconf;
+    __F_OPEN(&fconf, config_fn, "r+");
+    __get_row_fgets(&fconf, row);
+    __fscanf_dtc(&fconf, d);
+    fclose(fconf);
+}
+extern void __read_smdtc(char *config_fn, smdtc_t *d)
+{
+    FILE *fconf;
+    __F_OPEN(&fconf, config_fn, "r+");
+    __get_row_fgets(&fconf, row);
+    __fscanf_smdtc(&fconf, d);
+    fclose(fconf);
+}
+
+
+
+
+extern void __set_localdtc(smdtc_t *d1, dtc_t *d)
+{
+    d1->L1 = d->L1;
+    d1->L2 = d->L2;
+    d1->N = d->L1 * d->L2;
+    d1->Navg = d->Navg;
+    d1->tMC = d->tMC;
+    d1->_m_mea = d->_m_mea;
+    d1->_m_sav = d->_m_sav;
+    strcpy(d1->_m_init, d->_m_init);
+    strcpy(d1->_m_upd, d->_m_upd);
+}
+extern void __upd_localdtc(smdtc_t *d1, double b)
+{           
+    d1->b = b;
+}
+
+
 
 /**
  * ...
@@ -475,7 +485,7 @@ extern void __genUNcorr_CONFIG(char *config_fn)
     smdtc_t d1;
     side_t L1, L2, Ls;
     sysz_t N;
-    __fscanf_configfile(&d, config_fn);
+    __read_dtc(config_fn, &d);
     __set_localdtc(&d1, &d);
     L1 = d.L1;
     L2 = d.L2;
@@ -488,10 +498,10 @@ extern void __genUNcorr_CONFIG(char *config_fn)
         {
             __upd_localdtc(&d1, b);
             __readTauint_tmp(&d1, d, L1, L2);
-            // read tauint and use it as savetime, tMC = savetime*nconf
-            d1.tMC = d1._m_sav * d.nconf;
-            printf("nconf = %u tmc = %u, svt = %u\n", d.nconf, d1.tMC, d1._m_sav);
-            for (uint32_t av = 0; av < d.nconf; av++)//here use not dnavg ma 
+            // read tauint and use it as savetime, tMC = savetime*K
+            d1.tMC = d1._m_sav * d.K;
+            printf("K = %u tmc = %u, svt = %u\n", d.K, d1.tMC, d1._m_sav);
+            for (uint32_t av = 0; av < d.K; av++)//here use not dnavg ma 
                 __wbrite_nconf_d(d1);
         }
         L1 += Ls;
@@ -555,36 +565,7 @@ extern void __gen__obs_acfN(smdtc_t d, obs_t O)
     free(nn);
 }
 
-/** scan from configuration file the single realization struct
- * @param d (smdtc_t) the single realization struct
- * @param config_fn (char *) string with the configuration file name
- * @return (void) none
- */
-extern void  __fscanf_Nb_configfile(smdtc_t *d, char *config_fn)
-{
-    FILE *fc;
-    char row[STR1024];
-    char *tok, *ep;
-    __F_OPEN(&fc, config_fn, "r+");
-    __2get_row_fgets(&fc, row);
-    tok = strtok(row, ",");
-    d->K = strtou32(tok);
-    tok = strtok(NULL, ",");
-    d->L1 = strtou16(tok);
-    tok = strtok(NULL, ",");
-    d->L2 = strtou16(tok);
-    tok = strtok(NULL, ",");
-    d->Navg = strtou16(tok);
-    tok = strtok(NULL, ",");
-    d->b = strtod(tok, &ep);
-    tok = strtok(NULL, ",");
-    strcpy(d->_m_init, tok);
-    tok = strtok(NULL, ",");
-    strcpy(d->_m_upd, tok);
-    d->N = d->L1 * d->L2;
-    d->tMC = d->N;
-    fclose(fc);
-}
+
 /** create string path to observable folder with configurational parameters
  * @param _dirat (char *) the string onto which sprint the path
  * @param d (smdtc_t) the single realization struct
@@ -683,6 +664,7 @@ extern void __ifNETauint_makeit(smdtc_t d)
 {
     char _dirsti[STR512];
     __mkdir_obsN(_dirsti, d);
+    printf("%u\n", d.Navg);
     sprintf(buf, "%stauint_avg=" FMT_na EXTBIN, _dirsti, d.Navg);
     if (F_NEXIST(buf))
         __makeTauint(d);
