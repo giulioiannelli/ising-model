@@ -1,31 +1,39 @@
 #include <stdio.h>
 #include <imdefs.h>
-#include <imtdlib.h>
+#include <imdtlib.h>
 #include <imfnlib.h>
+#include <imllib.h>
 #include <imrng.h>
 
 int MODE;
 md_t run[NMODES];
-char buf[1024];
+char buf[STR1024], buf1[STR1024], buf2[STR1024];
 sfmt_t sfmt;
 uint32_t *seed_rand;
 FILE *f_log;
 
-const char *MODES[] = {"--print_c", "--check_sfmt", "--acf", "--gen_unconf"};//"--gen_kconf"
-void (*FUNCS[])() = {__print_configf, __check_RNG, __compute_ACF, __genUNcorr_CONFIG};//__genK_CONFIG
+const char *MODES[] = {MODE_PRINTC,
+                       MODE_CHKRNG,
+                       MODE_ACFCOR,
+                       MODE_GENUNC,
+                       MODE_KGENCN};
+vtmpf_t *FUNCS[] = {__print_configf,
+                     __check_RNG,
+                     __compute_acf,
+                     __genUNcorr_CONFIG,
+                     __gen_K_conf};
 
 int main(int argc, char *argv[])
 {
-    //git working
+    /*//////////////////////////////////////////// open log file, seed the RNG*/
+    __MAKElog(argc, argv);
+    __setSFMT_seed_rand();
     for (int i = 0; i < NMODES; i++)
     {
         run[i].__mode__ = FUNCS[i];
         run[i].__name__ = (char *) MODES[i];
     }
-    /*///////////////////////////////////////////////////////// open log file */
-    __MAKElog(argc, argv);
-    /*////////////////////////////////////////////////////////// seed the RNG */
-    __setSFMT_seed_rand();
+    printf("debug\n");
     /*////////////////////////////////////////////////// execute program mode */
     for (int a = TWO; a < argc; a++)
         if ((MODE = strIn_(argv[a], MODES)))

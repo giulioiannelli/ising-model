@@ -1,12 +1,14 @@
 /* CHECKED */
+#include <stdio.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <imdefs.h>
 
 #ifndef __IMDTLIB_H_INC__
 #define __IMDTLIB_H_INC__
 
-typedef void (__vtmpf_t)();
-typedef int8_t lttc_t;
+typedef void (vtmpf_t)();
+typedef int8_t hlttc_t;
 typedef uint16_t side_t;
 typedef uint16_t avg_t;
 typedef uint32_t sysz_t;
@@ -30,13 +32,34 @@ typedef struct nearest_neigh_on_lattice
     uint32_t E;
     uint32_t W;
 } nnl_t;
-typedef struct config_one
+typedef struct config_one_c
 {
-    side_t L1;
-    side_t L2;
+    uint32_t eK;
+    uint32_t mK;
+    uint32_t K;
+    sysz_t N;
     sysz_t tMC;
+    avg_t Navg;
     sysz_t _m_sav;
     double b;
+    double ti;
+    char _m_init[128];
+    char _m_upd[128];
+    bool _m_mea;
+} imcd_t;
+typedef struct config_one_l
+{
+    uint32_t eK;
+    uint32_t mK;
+    uint32_t K;
+    side_t L1;
+    side_t L2;
+    sysz_t N;
+    sysz_t tMC;
+    avg_t Navg;
+    sysz_t _m_sav;
+    double b;
+    double ti;
     char _m_init[128];
     char _m_upd[128];
     bool _m_mea;
@@ -64,6 +87,7 @@ typedef struct dataStruct_Nandbeta
 {
     uint32_t K;
     sysz_t N;
+    sysz_t _m_sav;
     avg_t Navg;
     double b;
     char _m_init[128];
@@ -71,7 +95,8 @@ typedef struct dataStruct_Nandbeta
 } dsNb_t;
 
 
-
+extern FILE *f_log;
+extern char buf[STR1024], buf1[STR1024], buf2[STR1024];
 extern const char *MODES[];
 
 #endif  /* __IMDTLIB_H_INC__ */

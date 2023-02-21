@@ -495,7 +495,7 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     free(s);
     free(nn);
 }
-extern void __compute_ACF(char *config_fn)
+extern void __compute_acf(char *config_fn)
 {
     char _dirsz[256], _dirb[512];
     side_t L1, L2, Ls;

@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     md_t run[2];
     run[0].__mode__ = __print_configf;
     run[0].__name__ = MODES[0];
-    run[1].__mode__ = __compute_ACF;
+    run[1].__mode__ = __compute_acf;
     run[1].__name__ = MODES[1];
     /*///////////////////////////////////////////////////////// open log file */
     sprintf(buf, DIRlog PROGN _UCFG "%s" EXTLOG, argv[1] + strlen(DIRcfg) + 1);
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     // if (strIn_(MODES, ARRAY_SIZE(MODES), argv[2]) == 0)
     //     __print_configf(argv[2], "stoutprint");
     // if (strcmp(argv[1], "--acf") == 0)
-    //     __compute_ACF(argv[2]);
+    //     __compute_acf(argv[2]);
     fclose(f_log);
 }
 

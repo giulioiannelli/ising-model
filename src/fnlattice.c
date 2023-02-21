@@ -5,42 +5,61 @@
 #include <string.h>
 #include <inttypes.h>
 #include <imdefs.h>
-#include <imtdlib.h>
+#include <imdtlib.h>
 #include <imfnlib.h>
+#include <imllib.h>
 #include <imrng.h>
+
 /**
- * initialize the lattice with a hot start (uniform distribution), i.e. spins
- * are Rademacher variables, {-1, +1}: p = 1/2
- * @param N (sysz_t) size of the lattice
- * @param s (lttc_t *) the lattice array
- * @return none
+ * compute the nearest neighbor given a specific site of the lattice
+ * @param i (sysz_t) the lattice site
+ * @param L1 (side_t) first dimension size of the lattice
+ * @param L1 (side_t) second dimension size of the lattice
+ * @return (nnl_t) nearest neighbors struct
  */
-extern void __init_hotstart_uniform(sysz_t N, lttc_t *s)
+extern nnl_t compute_nn(sysz_t i, side_t L1, side_t L2)
 {
-    for (sysz_t i = 0; i < N; i++)
-        s[i] = RANDTR01_11;
+    nnl_t nn;
+    if (i >= L1)
+        nn.N = i - L1;
+    else
+        nn.N = i + L1 * (L2 - 1);
+    if (i < L1 * (side_t)(L2 - 1))
+        nn.S = i + L1;
+    else
+        nn.S = i % L1;
+    if (i % L1)
+        nn.W = i - 1;
+    else
+        nn.W = i + (L1 - 1);
+    if ((i+1) % L1)
+        nn.E = i + 1;
+    else
+        nn.E = i - (L1 - 1);
+    return nn;
 }
 /**
- * initialize the lattice with a cold start, i.e. all the spins equal to +1 (-1)
- * with p = 1/2
- * @param N (sysz_t) size of the lattice
- * @param s (lttc_t *) the lattice array
+ * compute the nearest neighbor array
+ * @param L1 (side_t) first dimension size of the lattice
+ * @param L2 (side_t) second dimension size of the lattice
+ * @param nn (nnl_t *) the nearest neighbors array
  * @return none
  */
-extern void __init_coldstart(sysz_t N, lttc_t *s)
+extern void __compute_nn_array(side_t L1, side_t L2, nnl_t *nn)
 {
-    s[0] = RANDTR01_11;
-    for (sysz_t i = 1; i < N; i++)
-        s[i] = s[0];
+    for (sysz_t i = 0; i < L1 * L2; i++)
+        nn[i] = compute_nn(i, L1, L2);
 }
+/*///////////////////////////////////////////////////// I/O LATTICE FUNCTIONS */
+//
 /**
  * print the lattice on the screen
  * @param N (sysz_t) size of the lattice
  * @param L1 (side_t) first dimension size of the lattice
- * @param s (lttc_t *) the lattice array
+ * @param s (hlttc_t *) the lattice array
  * @return none
  */
-extern void __print_CONFIG(sysz_t N, side_t L1, lttc_t *s)
+extern void __print_CONFIG(sysz_t N, side_t L1, hlttc_t *s)
 {
     for (sysz_t i = 0; i < N; i++)
     {
@@ -54,10 +73,10 @@ extern void __print_CONFIG(sysz_t N, side_t L1, lttc_t *s)
  * @param fn (char *) string with the filename
  * @param N (sysz_t) size of the lattice
  * @param L1 (side_t) first dimension size of the lattice
- * @param s (lttc_t *) the lattice array
+ * @param s (hlttc_t *) the lattice array
  * @return none
  */
-extern void __fprint_CONFIG(char *fn, sysz_t N, side_t L1, lttc_t *s)
+extern void __fprint_CONFIG(char *fn, sysz_t N, side_t L1, hlttc_t *s)
 {
     FILE *fout;
     __F_OPEN(&fout, fn, "w+");
@@ -74,10 +93,10 @@ extern void __fprint_CONFIG(char *fn, sysz_t N, side_t L1, lttc_t *s)
  * @param fn (char *) string with the filename
  * @param t (sysz_t) MC time
  * @param N (sysz_t) size of the lattice
- * @param s (lttc_t *) the lattice array
+ * @param s (hlttc_t *) the lattice array
  * @return none
  */
-extern void __fwrite_CONFIG(char *fn, sysz_t t, sysz_t N, lttc_t *s)
+extern void __fwrite_CONFIG(char *fn, sysz_t t, sysz_t N, hlttc_t *s)
 {
     FILE *fout;
     sprintf(buf, "%sSCONF_t=%" PRIu32 EXTBIN, fn, t);
@@ -85,42 +104,37 @@ extern void __fwrite_CONFIG(char *fn, sysz_t t, sysz_t N, lttc_t *s)
     fwrite(s, sizeof(*s), N, fout);
     fclose(fout);
 }
-/**
- * write on file the lattice on the screen in binary (int8) format
- * @param N (sysz_t) size of the lattice
- * @param s (lttc_t *) the lattice array
- * @return none
+
+
+
+/*////////////////////////////////////////////////////////// I/O CONFIG FILES */
+/*
+*/
+
+/** mode selection in init and update modes 
+ * @param init_mode (char *) string defining the initialization of the model
+ * @param __ptrinit__ (vtmpf_t **) *pointer to init function
+ * @param upd_mode (char *) string defining the update scheme of the model
+ * @param __ptrupd__ (vtmpf_t **) *pointer to init function
+ * @return 
  */
-extern void __fwrite_CONFIGsamefile(FILE **fout, sysz_t N, lttc_t *s)
+extern void __setfunc__init__upd__(char *init_mode, vtmpf_t **__ptrinit__,
+                                   char *upd_mode, vtmpf_t **__ptrupd__)
 {
-    fwrite(s, sizeof(*s), N, *fout);
+    if (strcmp(init_mode, _M_HSU) == 0)
+        *__ptrinit__ = __init_hotstart_uniform;
+    else if (strcmp(init_mode, _M_CSU) == 0)
+        *__ptrinit__ = __init_coldstart;
+    else
+        *__ptrinit__ = NULL;
+    if (strcmp(upd_mode, _M_MEHA_SS) == 0)
+        *__ptrupd__ = __upd_MEHA_ss;
+    else if (strcmp(upd_mode, _M_MEHA_SA) == 0)
+        *__ptrupd__ = __upd_MEHA_sa;
+    else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
+        *__ptrupd__ = NULL;
 }
-/**
- * write on file the ACF (auto-correlation function) of the system in binary
- * (double) format
- * @param fn (char *) string with the filename
- * @param tMC (sysz_t) length of correlation interval considered
- * @param acf (double *) the autocorrelation function array
- * @return none
- */
-extern void __fwrite_ACF(char *fn, uint16_t na, sysz_t tMC, double *acf)
-{
-    FILE *fout;
-    sprintf(buf, "%sACF_avg=%" PRIu16 EXTBIN, fn, na);
-    __F_OPEN(&fout, buf, "wb");
-    fwrite(acf, sizeof(*acf), tMC, fout);
-    fclose(fout);
-}
-/**
- */
-extern void __fwrite_ti(char *fn, uint16_t na, double ti)
-{
-    FILE *fout;
-    sprintf(buf, "%stauint_avg=" FMT_na EXTBIN, fn, na);
-    __F_OPEN(&fout, buf, "wb");
-    fwrite(&ti, sizeof(ti), 1, fout);
-    fclose(fout);
-}
+
 /**
  * acquire from config file the d struct with allthe settings for the program
  * @param config_fn (char *) configuration file name
@@ -192,17 +206,18 @@ extern void __fscanf_configfile(dtc_t *d, char *config_fn)
 }
 extern void __set_localdtc(smdtc_t *d1, dtc_t *d)
 {
+    d1->L1 = d->L1;
+    d1->L2 = d->L2;
+    d1->N = d->L1 * d->L2;
     d1->tMC = d->tMC;
     d1->_m_mea = d->_m_mea;
     d1->_m_sav = d->_m_sav;
     strcpy(d1->_m_init, d->_m_init);
     strcpy(d1->_m_upd, d->_m_upd);
 }
-extern void __upd_localdtc(smdtc_t *d1, double b, side_t L1, side_t L2)
+extern void __upd_localdtc(smdtc_t *d1, double b)
 {           
     d1->b = b;
-    d1->L1 = L1;
-    d1->L2 = L2;
 }
 extern void __printf_configfile(dtc_t d, char *config_fn)
 {
@@ -226,8 +241,11 @@ extern void __printf_configfile(dtc_t d, char *config_fn)
 extern void __print_configf(char *config_fn)
 {
     dtc_t d;
+    printf("debug2\n");
     __fscanf_configfile(&d, config_fn);
+    printf("debug3\n");
     __printf_configfile(d, config_fn);
+    printf("debug4\n");
 }
 
 /**
@@ -235,28 +253,31 @@ extern void __print_configf(char *config_fn)
  * @param
  * @return
  */
-extern void __mkdir_syszN(char *_dirsz, side_t L1, side_t L2, smdtc_t d)
+extern void __mkdir_MOD_syszL1L2(const char *mode, char *_dirsz, smdtc_t d)
 {
-    if (L1 == L2)
+    if (d.L1 == d.L2)
     {
-        if (strcmp(_dirsz, "--acf") == 0)
-            sprintf(_dirsz, DIRobs __NIS__ _H "%s" _H "%s" _S, L1*L2, d._m_init, d._m_upd);
-        else if (strcmp(_dirsz, "--gen_config") == 0)
-            sprintf(_dirsz, DIRvbc __NIS__ _H "%s" _H "%s" _S, L1*L2, d._m_init, d._m_upd);
-        else if (strcmp(_dirsz, "--gen_unconf") == 0)
+        if (strcmp(mode, "--acf") == 0)
+            sprintf(_dirsz, DIRobs __NIS__ _H "%s" _H "%s" _S, d.L1*d.L2, d._m_init, d._m_upd);
+        else if (strcmp(mode, "--gen_config") == 0)
+            sprintf(_dirsz, DIRvbc __NIS__ _H "%s" _H "%s" _S, d.L1*d.L2, d._m_init, d._m_upd);
+        else if (strcmp(mode, "--gen_unconf") == 0)
             sprintf(_dirsz, DIRunc "%s" _H "%s" _S, d._m_init, d._m_upd);
+        else if (strcmp(mode, "--gen_kconf") == 0)
+            sprintf(_dirsz, DIRunc);
     }
     else
     {
-        if (strcmp(_dirsz, "--acf") == 0)
-            sprintf(_dirsz, DIRobs __L1IS_L2IS__ _H "%s" _H "%s" _S, L1, L2, d._m_init, d._m_upd);
-        else if (strcmp(_dirsz, "--gen_config") == 0)
-            sprintf(_dirsz, DIRvbc __L1IS_L2IS__ _H "%s" _H "%s" _S, L1, L2, d._m_init, d._m_upd);
-        else if (strcmp(_dirsz, "--gen_unconf") == 0)
+        if (strcmp(mode, "--acf") == 0)
+            sprintf(_dirsz, DIRobs __L1IS_L2IS__ _H "%s" _H "%s" _S, d.L1, d.L2, d._m_init, d._m_upd);
+        else if (strcmp(mode, "--gen_config") == 0)
+            sprintf(_dirsz, DIRvbc __L1IS_L2IS__ _H "%s" _H "%s" _S, d.L1, d.L2, d._m_init, d._m_upd);
+        else if (strcmp(mode, "--gen_unconf") == 0)
             sprintf(_dirsz, DIRunc "%s" _H "%s" _S,d._m_init, d._m_upd);
     }
     mkdir(_dirsz, ACCESSPERMS);
 }
+
 /**
  * ...
  * @param
@@ -298,109 +319,18 @@ extern uint32_t countbetasteps(dtc_t d)
         betas++;
     return betas;
 }
-/**
- * compute the nearest neighbor given a specific site of the lattice
- * @param L1 (side_t) first dimension size of the lattice
- * @param L1 (side_t) second dimension size of the lattice
- * @param i (sysz_t) the lattice site
- * @return (nnl_t) nearest neighbors struct
- */
-extern nnl_t compute_nn(sysz_t i, side_t L1, side_t L2)
-{
-    nnl_t nn;
-    if (i >= L1) // north
-        nn.N = i - L1;
-    else
-        nn.N = i + L1 * (L2 - 1);
-    if (i < L1 * (side_t)(L2 - 1)) // south
-        nn.S = i + L1;
-    else
-        nn.S = i % L1;
-    if (i % L1) // west
-        nn.W = i - 1;
-    else
-        nn.W = i + (L1 - 1);
-    if ((i+1) % L1) // east
-        nn.E = i + 1;
-    else
-        nn.E = i - (L1 - 1);
-    return nn;
-}
-/**
- * compute the nearest neighbor array
- * @param L1 (side_t) first dimension size of the lattice
- * @param L2 (side_t) second dimension size of the lattice
- * @param nn (nnl_t *) the nearest neighbors array
- * @return none
- */
-extern void __compute_nn_array(side_t L1, side_t L2, nnl_t *nn)
-{
-    sysz_t N = L1 * L2;
-    for (sysz_t i = 0; i < N; i++)
-        nn[i] = compute_nn(i, L1, L2);
-}
-/**
- * compute and return the magnetization of the system
- * @param N (sysz_t) size of the lattice
- * @param s (lttc_t *) the lattice array
- * @return none
- */
-extern double m(sysz_t N, lttc_t *s)
-{
-    double m = 0.;
-    for (sysz_t i = 0; i < N; i++)
-        m += s[i];
-    return m/N;
-}
-/**
- * compute and return the average magnetization of the system over time
- * @param tMC (sysz_t) the montecarlo simulation time
- * @param m (double *) the magnetization array
- * @return the sum of the array over the length
- */
-extern double m_avg(sysz_t tMC, double *m)
-{
-    double sum = 0.;
-    for (sysz_t t = 0; t < tMC; t++)
-        sum += m[t];
-    return sum / tMC;
-}
-/**
- * compute and return the average magnetization of the system over time
- * @param tMC (sysz_t) the montecarlo simulation time
- * @param m (double *) the magnetization array
- * @return the sum of the array over the length
- */
-extern double m_avg2(sysz_t tMC, double *m)
-{
-    double sum2 = 0.;
-    for (sysz_t t = 0; t < tMC; t++)
-        sum2 += m[t] * m[t];
-    return sum2 / tMC;
-}
-/**
- * ...
- * @param tMC (sysz_t) the montecarlo simulation time
- * @param l (sysz_t) the temporal extension to which compute ACF
- * @param m (double *) the magnetization array
- * @return
- */
-extern double m_corr_t(sysz_t tMC, sysz_t l, double *m)
-{
-    double sum = 0.;
-    for (uint32_t t = 0; t < tMC - l; t++)
-        sum += m[t] * m[t + l];
-    return sum / (tMC - l);
-}
+
+
+
 /**
  * compute and return the variation in the energy of the system when spin at
  * site u flips
  * @param u (sysz_t) updated site
- * @param s (lttc_t *) the lattice array
+ * @param s (hlttc_t *) the lattice array
  * @param nn (nnl_t) the nearest neighbors of the site
  * @return difference of enegry, if negative accept the proposed move
  */
-extern double dE(sysz_t u, lttc_t *s, nnl_t nn)
+extern double dE(sysz_t u, hlttc_t *s, nnl_t nn)
 {
     double dE, sum_nn;
     sum_nn = s[nn.N] + s[nn.S] + s[nn.W] + s[nn.E];
@@ -412,33 +342,16 @@ extern double dE(sysz_t u, lttc_t *s, nnl_t nn)
  * @param
  * @return
  */
-extern void __ACFcomputation(double **acf, smdtc_t d1, obs_t O)
+extern void __measure_OBS(sysz_t t, sysz_t N, hlttc_t *s, obs_t O)
 {
-    sysz_t tMC, l;
-    double mavg, mavg2, m2avg;
-    tMC = d1.tMC * d1.L1 * d1.L2;
-    mavg = m_avg(tMC, O.magn);
-    m2avg = m_avg2(tMC, O.magn);
-    mavg2 = mavg * mavg;
-    *(*acf + (l = 0)) = 1;
-    while (++l < tMC - 1)
-        *(*acf + l) = (m_corr_t(tMC, l, O.magn) - mavg2) / (m2avg - mavg2);
+    O.magn[t] = magn(N, s);
 }
 /**
  * ...
  * @param
  * @return
  */
-extern void __measure_OBS(sysz_t t, sysz_t N, lttc_t *s, obs_t O)
-{
-    O.magn[t] = m(N, s);
-}
-/**
- * ...
- * @param
- * @return
- */
-extern void __upd_MEseq__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
+extern void __upd_MEHA_ss(double beta, sysz_t N, hlttc_t *s, nnl_t *nn)
 {
     double dEtmp;
     for (sysz_t u = 0; u < N; u++)
@@ -455,7 +368,7 @@ extern void __upd_MEseq__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
  * @param
  * @return
  */
-extern void __upd_MEasy__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
+extern void __upd_MEHA_sa(double beta, sysz_t N, hlttc_t *s, nnl_t *nn)
 {
     sysz_t u;
     double dEtmp;
@@ -469,6 +382,22 @@ extern void __upd_MEasy__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
             s[u] = -s[u];
     }
 }
+
+
+extern void __setsave_time(smdtc_t d, sysz_t *st)
+{
+    if (d._m_sav)
+        *st = d._m_sav;
+    else
+        *st = d.tMC + 1;
+}
+extern void __setmeasureOBS(smdtc_t d, vtmpf_t **mf)
+{
+    if (d._m_mea)
+        *mf = __measure_OBS;
+    else 
+        *mf = __splash__;
+}
 /**
  * generate Ising 2D lattice configuration(s) following instructions provided in
  * configuration file specified by string config_fn
@@ -478,180 +407,57 @@ extern void __upd_MEasy__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
 extern void __gen_config_(smdtc_t d, obs_t O)
 {
     char _dirsz[256], _dirb[512];
-    double beta;
     uint32_t save_time;
-    side_t L1, L2;
-    sysz_t N, tMC;
-    lttc_t *s;
+    hlttc_t *s;
     nnl_t *nn;
-    __vtmpf_t *__init__, *__upd__, *__measure__;
-    // void (*__init__)(), (*__upd__)(), (*__measure__)();
-
+    vtmpf_t *__init__, *__upd__, *__measure__;
     /*//////////////////////////////////////////////////// allocate variables */
-    L1 = d.L1;
-    L2 = d.L2;
-    beta = d.b;
-    N = (L1 * L2);
-    tMC = d.tMC * N;
-    __alloc_fill_snn(&s, &nn, L1, L2);
+    d.tMC *= d.N;
+    __alloc_fill_snn(&s, &nn, d);
     /*///////////////////////////////////////////// create folder for results */
-    sprintf(_dirsz, "--gen_config");
-    __mkdir_syszN(_dirsz, L1, L2, d);
-    // // /*///////////////////////////////////////////////////////// set init mode */
     __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
-    /*///////////////////////////////////////////////////////// set save mode */
-    // printf("save config every: %" PRIu32 "\n", d._m_sav);
-    if (d._m_sav)
-        save_time = d._m_sav;
-    else
-        save_time = tMC + 1;
-    /*////////////////////////////////////////////////////// set measure mode */
-    if (d._m_mea)
-        __measure__ = __measure_OBS;
-    else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
-        __measure__ = __splash__;
+    __setsave_time(d, &save_time);
+    __setmeasureOBS(d, &__measure__);
     /*///////////////////////////////////////////// create folder for results */
-    __mkdir_syszb(_dirb, beta, _dirsz);
-    __init__(N, s);
-    for (sysz_t t = 1; t < tMC + 1; t++) // printf("\rt = %d", t);
+    __mkdir_MOD_syszL1L2(MODE_GENCON, _dirsz, d);
+    __mkdir_syszb(_dirb, d.b, _dirsz);
+    __init__(d.N, s);
+    for (sysz_t t = 1; t < d.tMC + 1; t++)
     {
-        // printf("\rt = %d", t);
-        __measure__(t - 1, N, s, O);
-        __upd__(beta, N, s, nn);
+        __measure__(t - 1, d.N, s, O);
+        __upd__(d.b, d.N, s, nn);
         if (!(t % save_time))
-            __fwrite_CONFIG(_dirb, t, N, s);
+            __fwrite_CONFIG(_dirb, t, d.N, s);
     }
-    // printf("\n");
+    d.tMC /= d.N;
     free(s);
     free(nn);
 }
-/**
- * ...
+/** allocate the lattice and fill the nearest neighbour struct
+ * @param s (hlttc_t **) double pointer to lattice
+ * @param nn (nnl_t **) double pointer to nearest neighbour struct 
  */
 
-extern void __alloc_fill_snn(lttc_t **s, nnl_t **nn, side_t L1, side_t L2)
+extern void __alloc_fill_snn(hlttc_t **s, nnl_t **nn, smdtc_t d)
 {
-    sysz_t N = L1 * L2;
+    sysz_t N = d.L1 * d.L2;
     (*s) = malloc(sizeof(**s) * N);
     __challoc(*s);
     (*nn) = malloc(sizeof(**nn) * N);
     __challoc(*nn);
-    __compute_nn_array(L1, L2, *nn);
+    __compute_nn_array(d.L1, d.L2, *nn);
 }
 
-extern void __gen_config2_(smdtc_t d)
-{
-    FILE *fout;
-    char _dirsz[256], _dirb[512];
-    double beta;
-    uint32_t save_time, nconf;
-    side_t L1, L2;
-    sysz_t N, tMC;
-    lttc_t *s;
-    nnl_t *nn;
-    // __vtmpf_t *__init__, *__upd__, *__measure__;
-    __vtmpf_t *__init__, *__upd__, *__measure__;
-    // /*///////////////////////////////////////////// open and read config_file */
-    // d = __fscanf_configfile(config_fn);
-    /*//////////////////////////////////////////////////// allocate variables */
-    L1 = d.L1;
-    L2 = d.L2;
-    beta = d.b;
-    N = (L1 * L2);
-    tMC = d.tMC * N;
-    __alloc_fill_snn(&s, &nn, L1, L2);
-    /*///////////////////////////////////////////// create folder for results */
-    sprintf(_dirsz, "--gen_unconf");
-    __mkdir_syszN(_dirsz, L1, L2, d);
-    /*///////////////////////////////////////////////////////// set init mode */
-    __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
-    /*///////////////////////////////////////////////////////// set save mode */
-    // printf("save config every: %" PRIu32 "\n", d._m_sav);
-    if (d._m_sav)
-        save_time = d._m_sav;
-    else
-        save_time = tMC + 1;
-    /*///////////////////////////////////////////// create folder for results */
-    nconf = (double) tMC / save_time;
-    printf("nconf = %u tmc = %u, svt = %u\n", nconf, tMC, save_time);
-    //here ISING2DHSAS should become P_type which depends on config file
-    sprintf(buf, "%s" ISING2DHSAS _U __NIS__ _U __TIS__ _U "[%" PRIu32 "]" EXTBIN, _dirsz, N, 1./beta, nconf);
-    __F_OPEN(&fout, buf, "wb");
-    for (sysz_t i = 0; i < nconf; i++) // printf("\rt = %d", t);
-    {
-        __init__(N, s);
-        for (sysz_t t = 0; t < save_time; t++)
-            __upd__(beta, N, s, nn);
-        __fwrite_CONFIGsamefile(&fout, N, s);
-    }
-    fclose(fout);
-    // printf("\n");
-    free(s);
-    free(nn);
-}
-extern void __compute_ACF(char *config_fn)
-{
-    char _dirsz[256], _dirb[512];
-    side_t L1, L2, Ls;
-    sysz_t N, tMC;
-    double tauint;
-    double *ACFcorr, *ACFcorr_cum, *ti;
-    smdtc_t d1;
-    dtc_t d;
-    obs_t O;
-    /*///////////////////////////////// open and read config_file + variables */
-    __fscanf_configfile(&d, config_fn);
-    __set_localdtc(&d1, &d);
-    L1 = d.L1;
-    L2 = d.L2;
-    Ls = d.Ls;
-    N = (L1 * L2);
-    /*////////////////////////////////////////////////////////////////////////*/
-    while (N <= d.N_M)
-    {
-        sprintf(_dirsz, "--acf");
-        __mkdir_syszN(_dirsz, L1, L2, d1);
-        for (double b = d.b_m; b < d.b_M; b += d.b_s)
-        {
-            __mkdir_syszb(_dirb, b, _dirsz);
-            __upd_localdtc(&d1, b, L1, L2);
-            tMC = d1.tMC * N;
-            ti = malloc(sizeof(*ti) * d.Navg);
-            O.magn = malloc(sizeof(*O.magn) * tMC);
-            ACFcorr = calloc(tMC, sizeof(*ACFcorr));
-            ACFcorr_cum = calloc(tMC, sizeof(*ACFcorr_cum));
-            for (uint32_t av = 0; av < d.Navg; av++)
-            {
-                __gen_config_(d1, O);
-                __ACFcomputation(&ACFcorr, d1, O);
-                //
-                for (sysz_t t = 0; t < tMC; t++)
-                    ACFcorr_cum[t] += ACFcorr[t];
-                sysz_t tt = 0;
-                ti[av] = 1. / 2;
-                while (ACFcorr[tt++] > 1/M_E && tt < tMC)
-                    ti[av] += ACFcorr[tt];
-            }
-            tauint = avg(d.Navg, ti);
-            for (sysz_t t = 0; t < tMC; t++)
-                ACFcorr_cum[t] /= d.Navg;
-            __fwrite_ACF(_dirb, d.Navg, tMC, ACFcorr_cum);
-            __fwrite_ti(_dirb, d.Navg, tauint);
-            free(ACFcorr);
-            free(ACFcorr_cum);
-            free(O.magn);
-            free(ti);
-        }
-        L1 += Ls;
-        L2 += Ls;
-        N = (L1 * L2);
-    }
-}
-extern void __readTauint(smdtc_t *d1, dtc_t d, side_t L1, side_t L2)
+
+
+extern void __readTauint_tmp(smdtc_t *d1, dtc_t d, side_t L1, side_t L2)
 {
     FILE *fti;
+    char _diracfti[STR512];
     double tauint;
-    sprintf(buf, DIRobs __NIS__ _H "%s" _H "%s" _S __BTIS__ _S "tauint_avg=" FMT_na EXTBIN, L1*L2, d._m_init, d._m_upd, d1->b, d.Navg);
+    __mkdir_obsN(_diracfti, *d1);
+    sprintf(buf, DIRobs __NIS__ _H "%s" _H "%s" _S __BTIS__ _S "tauint_avg=" FMT_na EXTBIN,
+            L1*L2, d._m_init, d._m_upd, d1->b, d.Navg);
     __F_OPEN(&fti, buf, "rb");
     if (fread(&tauint, sizeof(double), ONE, fti) != ONE)
     {
@@ -664,12 +470,11 @@ extern void __readTauint(smdtc_t *d1, dtc_t d, side_t L1, side_t L2)
 
 extern void __genUNcorr_CONFIG(char *config_fn)
 {
-    char _dirsz[256], _dirb[512];
+    char _dirsz[256];
     dtc_t d;
     smdtc_t d1;
     side_t L1, L2, Ls;
     sysz_t N;
-    obs_t O;
     __fscanf_configfile(&d, config_fn);
     __set_localdtc(&d1, &d);
     L1 = d.L1;
@@ -678,155 +483,325 @@ extern void __genUNcorr_CONFIG(char *config_fn)
     N = (L1 * L2);
     while (N <= d.N_M)
     {
-        sprintf(_dirsz, "--gen_unconf");
-        __mkdir_syszN(_dirsz, L1, L2, d1);
+        __mkdir_MOD_syszL1L2(MODE_GENUNC, _dirsz, d1);
         for (double b = d.b_m; b < d.b_M; b += d.b_s)
         {
-            __upd_localdtc(&d1, b, L1, L2);
-            __readTauint(&d1, d, L1, L2);
+            __upd_localdtc(&d1, b);
+            __readTauint_tmp(&d1, d, L1, L2);
             // read tauint and use it as savetime, tMC = savetime*nconf
             d1.tMC = d1._m_sav * d.nconf;
             printf("nconf = %u tmc = %u, svt = %u\n", d.nconf, d1.tMC, d1._m_sav);
             for (uint32_t av = 0; av < d.nconf; av++)//here use not dnavg ma 
-                __gen_config2_(d1);
+                __wbrite_nconf_d(d1);
         }
         L1 += Ls;
         L2 += Ls;
         N = (L1 * L2);
     }
 }
-// extern void  __fscanf_Nb_configfile(dsNb_t *d, char *config_fn)
-// {
-//     FILE *fconf;
-//     char row[1024];
-//     char *tok, *endptr;
-//     __F_OPEN(&fconf, config_fn, "r+");
-//     if (fgets(row, 1024, fconf) == NULL)
-//     {
-//         ;
-//     }
-//     if (fgets(row, 1024, fconf) == NULL)
-//     {
-//         ;
-//     }
-//     tok = strtok(row, ",");
-//     d->K = strtou32(tok);
-//     tok = strtok(NULL, ",");
-//     d->N = strtou32(tok);
-//     tok = strtok(NULL, ",");
-//     d->Navg = strtou16(tok);
-//     tok = strtok(NULL, ",");
-//     d->b = strtod(tok, &endptr);
-//     tok = strtok(NULL, ",");
-//     strcpy(d->_m_init, tok);
-//     tok = strtok(NULL, ",");
-//     strcpy(d->_m_upd, tok);
-//     tok = strtok(NULL, ",");
-//     fclose(fconf);
-// }
-/**
- * mode selection in gen_configmeasure 
- * @param 
- * @return 
- */
-extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
-                                   char *upd_mode, __vtmpf_t **__ptrupd__)
+
+
+
+
+
+
+
+
+
+
+
+
+extern void __translate_dsNb_smdtc(dsNb_t d, smdtc_t *d1)
 {
-    if (strcmp(init_mode, "hs_unif") == 0)
-        *__ptrinit__ = __init_hotstart_uniform;
-    else if (strcmp(init_mode, "cs_unif") == 0)
-        *__ptrinit__ = __init_coldstart;
-    else
-        *__ptrinit__ = NULL;
-    /*///////////////////////////////// set update mode (wolff or metropolis) */
-    if (strcmp(upd_mode, "algo_metro_s") == 0)
-        *__ptrupd__ = __upd_MEseq__scheme;
-    else if (strcmp(upd_mode, "algo_metro_a") == 0)
-        *__ptrupd__ = __upd_MEasy__scheme;
-    else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
-        *__ptrupd__ = NULL;
+    d1->L1 = sqrt(d.N);
+    d1->L2 = sqrt(d.N);
+    d1->tMC = d.N;
+    d1->b = d.b;
+    d1->_m_sav = d._m_sav;
+    strcpy(d1->_m_init, d._m_init);
+    strcpy(d1->_m_upd, d._m_upd);
 }
-// /**
-//  * generate Ising 2D lattice configuration(s) following instructions provided in
-//  * configuration file specified by string config_fn
-//  * @param config_fn configuration file name
-//  * @return difference of enegry, if negative accept the proposed move
-//  */
-// extern void __gen_configmeasure_(dsNb_t d, obs_t O)
-// {
-//     char _dirsz[256], _dirb[512];
-//     double beta;
-//     uint32_t save_time;
-//     side_t L1, L2;
-//     sysz_t N, tMC;
-//     lttc_t *s;
-//     nnl_t *nn;
-//     void (*__init__)(), (*__upd__)(), (*__measure__)();
+extern void __translate_smdtc_dsNb(dsNb_t *d1, smdtc_t d)
+{
+    d1->N = d.L1 * d.L2;
+    d1->b = d.b;
+    strcpy(d1->_m_init, d._m_init);
+    strcpy(d1->_m_upd, d._m_upd);
+}
 
-//     /*//////////////////////////////////////////////////// allocate variables */
-//     L1 = d.L1;
-//     L2 = d.L2;
-//     beta = d.b;
-//     N = (L1 * L2);
-//     tMC = d.tMC * N;
-//     __alloc_fill_snn(&s, &nn, L1, L2);
-//     /*///////////////////////////////////////////// create folder for results */
-//     sprintf(_dirsz, "--gen_config");
-//     __mkdir_syszN(_dirsz, L1, L2, d);
-//     /*///////////////////////////////////////////////////////// set init mode */
-//     if (strcmp(d._m_init, "hs_unif") == 0)
-//         __init__ = __init_hotstart_uniform;
-//     else if (strcmp(d._m_init, "cs_unif") == 0)
-//         __init__ = __init_coldstart;
-//     else
-//         __init__ = NULL;
-//     /*///////////////////////////////// set update mode (wolff or metropolis) */
-//     if (strcmp(d._m_upd, "algo_metro_s") == 0)
-//         __upd__ = __upd_MEseq__scheme;
-//     else if (strcmp(d._m_upd, "algo_metro_a") == 0)
-//         __upd__ = __upd_MEasy__scheme;
-//     else // if (strcmp(d.MODE_init, "algo_wolff") == 0)
-//         __upd__ = NULL;
-//     /*///////////////////////////////////////////// create folder for results */
-//     __mkdir_syszb(_dirb, beta, _dirsz);
-//     __init__(N, s);
-//     for (sysz_t t = 1; t < tMC + 1; t++) // printf("\rt = %d", t);
-//     {
-//         // printf("\rt = %d", t);
-//         __measure_OBS(t - 1, N, s, O);
-//         __upd__(beta, N, s, nn);
+/** generate a square lattice Ising configuration for measuring observables 
+ * needed for auto-correlation function and integrated auto-correlation time
+ * @param d (smdtc_t) the single realization struct
+ * @param O (obs_t) the observable struct for computing magnetization
+ * @return (void) none
+ */
+extern void __gen__obs_acfN(smdtc_t d, obs_t O)
+{
+    hlttc_t *s;
+    nnl_t *nn;
+    vtmpf_t *__init__, *__upd__;
+    vtmpf_t *__measure__ = __measure_OBS;
+    /**/
+    __alloc_fill_snn(&s, &nn, d);
+    __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
+    /**/
+    __init__(d.N, s);
+    for (sysz_t t = 1; t < d.N; t++)
+    {
+        __measure__(t - 1, d.N, s, O);
+        __upd__(d.b, d.N, s, nn);
+    }
+    free(s);
+    free(nn);
+}
 
-//     }
-//     // printf("\n");
-//     free(s);
-//     free(nn);
-// }
-// extern void  __makeTauint(dsNb_t d)
-// {
-//     sprintf(buf, DIRobs __NIS__ _H "%s" _H "%s" _S __BTIS__ _S "tauint_avg=" FMT_na EXTBIN, d.N, d._m_init, d._m_upd, d.b, d.Navg);
-//     if (F_NEXIST(buf))
-//     {
-//         fprintf(f_log, MSGINFO PIFNXST "%s", buf);
-//         char *args1Dtauint[] = {(char *)NI1DT, strN, strTi, NULL};
-//         run_sub(3, args1Dtauint);
-//     }
-// }
-// extern void __genK_CONFIG(char *config_fn)
-// {
-// // to do aggiusto tmc per decidere quante configurazioni far stampare a gengonfig2
-//     // leggo il file .config_1mkvp dove c'e K (numero di configurazioni da avere)
-//     // N lunghezza della configurazione, beta: temperatura della configurazione
-//     char _dirsz[256], _dirb[512];
-//     dsNb_t d;
-//     __fscanf_Nb_configfile(&d, config_fn);
-//     __makeTauint(d);// make tuint if not there
-//     d.tMC = d._m_sav * d.nconf;
-//     __gen_config2_(d);
-// }
+/** scan from configuration file the single realization struct
+ * @param d (smdtc_t) the single realization struct
+ * @param config_fn (char *) string with the configuration file name
+ * @return (void) none
+ */
+extern void  __fscanf_Nb_configfile(smdtc_t *d, char *config_fn)
+{
+    FILE *fc;
+    char row[STR1024];
+    char *tok, *ep;
+    __F_OPEN(&fc, config_fn, "r+");
+    __2get_row_fgets(&fc, row);
+    tok = strtok(row, ",");
+    d->K = strtou32(tok);
+    tok = strtok(NULL, ",");
+    d->L1 = strtou16(tok);
+    tok = strtok(NULL, ",");
+    d->L2 = strtou16(tok);
+    tok = strtok(NULL, ",");
+    d->Navg = strtou16(tok);
+    tok = strtok(NULL, ",");
+    d->b = strtod(tok, &ep);
+    tok = strtok(NULL, ",");
+    strcpy(d->_m_init, tok);
+    tok = strtok(NULL, ",");
+    strcpy(d->_m_upd, tok);
+    d->N = d->L1 * d->L2;
+    d->tMC = d->N;
+    fclose(fc);
+}
+/** create string path to observable folder with configurational parameters
+ * @param _dirat (char *) the string onto which sprint the path
+ * @param d (smdtc_t) the single realization struct
+ * @return (void) none
+ */
+extern void __sprintf_obsN(char *_dirat, smdtc_t d)
+{
+    sprintf(_dirat, DIRobs __NIS__ _H "%s" _H "%s" _S,
+        d.N, d._m_init, d._m_upd);
+}
+/** create string path to observable folder with configurational parameters
+ * @param _dirat (char *) the string onto which sprint the path
+ * @param d (smdtc_t) the single realization struct
+ * @return (void) none
+ */
+extern void __sprintf_obsNb(char *_dirat, smdtc_t d)
+{
+    sprintf(_dirat, DIRobs __NIS__ _H "%s" _H "%s" _S __BTIS__ _S,
+        d.N, d._m_init, d._m_upd, d.b);
+}
+
+/** create string path to observable folder with configurational parameters and
+ * make directory if it does not exists
+ * @param _dirat (char *) the string onto which sprint the path
+ * @param d (smdtc_t) the single realization struct
+ * @return (void) none
+ */
+extern void __mkdir_obsN(char *_dirat, smdtc_t d)
+{
+    __sprintf_obsN(_dirat, d);
+    mkdir(_dirat, ACCESSPERMS);
+    __sprintf_obsNb(_dirat, d);
+    mkdir(_dirat, ACCESSPERMS);
+}
 
 
 
+/** compute integrated correlation time with configuration set by (smdtc_t) 
+ * struct 
+ * @param d (smdtc_t) the single realization struct
+ * @return (void) none
+ */
+extern void __makeTauint(smdtc_t d)
+{
+    char _diracfti[STR512];
+    obs_t O;
+    double Tauint, *acf, *acf_C, *ti;
+    /*////////////////////////////////////////////////////////////////////////*/
+    __sprintf_obsNb(_diracfti, d);
+    __allocate_acfrel(d.tMC, d.Navg, &acf, &acf_C, &ti);
+    O.magn = malloc(sizeof(*O.magn) * d.N);
+    __challoc(O.magn);
+    /**/
+    for (uint32_t av = 0; av < d.Navg; av++)
+    {
+        __gen__obs_acfN(d, O);
+        __acf(d.tMC, &acf, O.magn);
+        __acf_cum(d.tMC, acf_C, acf);
+        __taui_av(d.tMC, &*(ti + av), acf);
+    }
+    Tauint = avg(d.Navg, ti);
+    __acfcum_norm(d.tMC, d.Navg, acf_C);
+    /**/
+    __fwrite_acf(_diracfti, d.tMC, d.Navg, acf_C);
+    __fwrite_ti(_diracfti, d.Navg, Tauint);
+    /**/
+    free(acf);
+    free(acf_C);
+    free(O.magn);
+    free(ti);
+}
+/** read integrated correlation time with configuration set by (smdtc_t) struct
+ * and store inside it
+ * @param d (smdtc_t) the single realization struct
+ * @return (void) none
+ */
+extern void __readTauint(smdtc_t *d)
+{
+    FILE *fti;
+    char _diracfti[STR512];
+    __mkdir_obsN(_diracfti, *d);
+    sprintf(buf, "%stauint_avg=" FMT_na EXTBIN, _diracfti, d->Navg);
+    __F_OPEN(&fti, buf, "rb");
+    if (fread(&d->ti, sizeof(double), ONE, fti) != ONE)
+    {
+        ;// to do debug of problem ifreading does not goes well
+    }
+    d->_m_sav = ceil(d->ti) + 1;
+    fclose(fti);
+}
+/** set the tauint variable inside the single configuration file
+ * @param d (smdtc_t) the single realization struct
+ * @return (void) none
+ */
+extern void __ifNETauint_makeit(smdtc_t d)
+{
+    char _dirsti[STR512];
+    __mkdir_obsN(_dirsti, d);
+    sprintf(buf, "%stauint_avg=" FMT_na EXTBIN, _dirsti, d.Navg);
+    if (F_NEXIST(buf))
+        __makeTauint(d);
+}
+/** set the tauint variable inside the single configuration file
+ * @param d (smdtc_t) the single realization struct
+ * @return (void) none
+ */
+extern void __Tauint(smdtc_t d)
+{
+    __ifNETauint_makeit(d);
+    __readTauint(&d);
+}
 
+extern void __make_buf_cgfpth(smdtc_t d, char *_dirsz, char *P_TYPE)
+{
+    sprintf(buf, "%s%s" _U __NIS__ _U __TIS__ _U _FMT_K_ EXTBIN, 
+            _dirsz, P_TYPE, d.N, 1. / d.b, d.eK);
+}
+
+extern void __rename_cfgpth(smdtc_t d, char *_dirsz, char *P_TYPE)
+{
+    if (d.mK)
+    {
+        sprintf(buf2, "%s%s" _U __NIS__ _U __TIS__ _U _FMT_K_ EXTBIN,
+                _dirsz, P_TYPE, d.N, 1. / d.b, d.K);
+        if ((rename(buf, buf2)) == 0)
+        {
+            fprintf(f_log, PIFRSUC);
+        }
+        else
+        {
+            fprintf(f_log, MSGFAIL PFUNREN);
+        }
+    }
+}
+extern void __wbrite_nconf_d(smdtc_t d)
+{
+    FILE *fo;
+    char _dirsz[STR256];
+    char P_TYPE[STR256];
+    hlttc_t *s;
+    nnl_t *nn;
+    sysz_t St;
+    vtmpf_t *__init__, *__upd__;
+    /**/
+    d.tMC = d.K * d._m_sav;
+    __alloc_fill_snn(&s, &nn, d);
+    __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
+    __setsave_time(d, &St);
+    /**/
+    __mkdir_MOD_syszL1L2(MODE_KGENCN, _dirsz, d);
+    __find_effKCFGS(&d);
+    __get_P_TYPE(d, P_TYPE);
+    __make_buf_cgfpth(d, _dirsz, P_TYPE);
+    __F_OPEN_SEEKEND(&fo, buf, "a+b");
+    /**/
+    for (sysz_t i = 0; i < d.mK; i++)
+    {
+        __init__(d.N, s);
+        for (sysz_t t = 0; t < St; t++)
+            __upd__(d.b, d.N, s, nn);
+        __fwrite_cfg(&fo, d.N, s);
+    }
+    free(s);
+    free(nn);
+    fclose(fo);
+    /**/
+    __rename_cfgpth(d, _dirsz, P_TYPE);
+}
+
+
+extern void __get_P_TYPE(smdtc_t d, char *ptype)
+{
+    if (strcmp(d._m_init, _M_HSU) == 0)
+    {
+        if (strcmp(d._m_upd, _M_MEHA_SA) == 0)
+            sprintf(ptype, ISING2DHSSA);
+        else if (strcmp(d._m_upd, _M_MEHA_SS) == 0)
+            sprintf(ptype, ISING2DHSSS);
+    }
+    else if (strcmp(d._m_init, _M_CSU) == 0)
+    {
+        if (strcmp(d._m_upd, _M_MEHA_SA) == 0)
+            sprintf(ptype, ISING2DCSSA);
+        else if (strcmp(d._m_upd, _M_MEHA_SS) == 0)
+            sprintf(ptype, ISING2DCSSS);
+    }
+}
+
+extern void __find_effKCFGS(smdtc_t *d)
+{
+    FILE *pipe;
+    char P_TYPE[STR256];
+    __get_P_TYPE(*d, P_TYPE);
+    sprintf(buf, "find " DIRunc " -maxdepth 1 -name %s" _U __NIS__ _U __TIS__ _U "*",
+        P_TYPE, d->N, 1. / d->b);
+    if ((pipe = popen(buf, "r")) == NULL)
+    {
+        perror("PIPING ERROR");
+        exit(EXIT_FAILURE);
+    }
+    ;
+    if (fgets(buf, sizeof(buf), pipe) == NULL)
+    {
+        ;
+    }
+    buf[strlen(buf) - 1] = '\0';
+    pclose(pipe);
+    d->eK = d->K;
+    d->mK = d->K;
+    if (!(strncmp(buf, DIRunc, strlen(DIRunc))))
+    {
+        sprintf(buf1, DIRunc "%s" _U __NIS__ _U __TIS__ _U "[", P_TYPE, d->N, 1. / d->b);
+        strncpy(buf2, buf + strlen(buf1), strlen(buf) - strlen(buf1) - 5);
+        d->eK = strtou32(buf2);
+        d->mK = softplus_u32(d->K - d->eK);
+    }
+}
 
 
 
@@ -835,7 +810,7 @@ extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
 
 
 //TRASH
-// extern void updWO(double T, sysz_t N, lttc_t *s, nnl_t *nn)
+// extern void updWO(double T, sysz_t N, hlttc_t *s, nnl_t *nn)
 // {
 //     //    int j, nn[Z];
 //     //    s[i] = - s0;                    /* flip the spin immediateL2 */
@@ -861,7 +836,7 @@ extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
 //  * @param s the lattice array
 //  * @return none
 //  */
-// extern void __init_hotstart_uniform(sysz_t N, lttc_t *s)
+// extern void __init_hotstart_uniform(sysz_t N, hlttc_t *s)
 // {
 //     for (sysz_t i = 0; i < N; i++)
 //         s[i] = TWO * (RNG_u64() % TWO) - 1;
@@ -873,7 +848,7 @@ extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
 //  * @param s the lattice array
 //  * @return none
 //  */
-// extern void __init_coldstart(sysz_t N, lttc_t *s)
+// extern void __init_coldstart(sysz_t N, hlttc_t *s)
 // {
 //     s[0] = TWO * (RNG_u64() % TWO) - 1;
 //     for (sysz_t i = 1; i < N; i++)
@@ -886,7 +861,7 @@ extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
 //  * @param s the lattice array
 //  * @return none
 //  */
-// extern void __print_CONFIG(sysz_t N, side_t L1, lttc_t *s)
+// extern void __print_CONFIG(sysz_t N, side_t L1, hlttc_t *s)
 // {
 //     for (sysz_t i = 0; i < N; i++)
 //     {
@@ -904,7 +879,7 @@ extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
 //  * @param s the lattice array
 //  * @return none
 //  */
-// extern void fprintcfg(FILE **f, sysz_t N, side_t L1, lttc_t *s)
+// extern void fprintcfg(FILE **f, sysz_t N, side_t L1, hlttc_t *s)
 // {
 //     for (sysz_t i = 0; i < N; i++)
 //     {
@@ -921,7 +896,7 @@ extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
 //  * @param s the lattice array
 //  * @return none
 //  */
-// extern void fwritecfg(FILE **f, sysz_t N, lttc_t *s)
+// extern void fwritecfg(FILE **f, sysz_t N, hlttc_t *s)
 // {
 //     fwrite(s, sizeof(*s), N, *f);
 // }
@@ -979,7 +954,7 @@ extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
 //  * @param s the lattice array
 //  * @return none
 //  */
-// extern double m(sysz_t N, lttc_t *s)
+// extern double m(sysz_t N, hlttc_t *s)
 // {
 //     double m = 0.;
 //     for (sysz_t i = 0; i < N; i++)
@@ -994,14 +969,14 @@ extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
 //  * @param nn the nearest neighbors array
 //  * @return difference of enegry, if negative accept the proposed move
 //  */
-// extern double dE(sysz_t u, lttc_t *s, nnl_t nn)
+// extern double dE(sysz_t u, hlttc_t *s, nnl_t nn)
 // {
 //     double dE, sum_nn;
 //     sum_nn = s[nn.N] + s[nn.S] + s[nn.W] + s[nn.E];
 //     dE = 2 * J * s[u] * sum_nn;
 //     return dE;
 // }
-// extern void __upd_ME__scheme(double beta, sysz_t N, lttc_t *s, nnl_t *nn)
+// extern void __upd_ME__scheme(double beta, sysz_t N, hlttc_t *s, nnl_t *nn)
 // {
 //     double dEtmp;
 //     for (sysz_t u = 0; u < N; u++)
@@ -1013,7 +988,7 @@ extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
 //             s[u] = -s[u];
 //     }
 // }
-// // extern void updWO(double T, sysz_t N, lttc_t *s, nnl_t *nn)
+// // extern void updWO(double T, sysz_t N, hlttc_t *s, nnl_t *nn)
 // // {
 // //     //    int j, nn[Z];
 // //     //    s[i] = - s0;                    /* flip the spin immediateL2 */
@@ -1057,7 +1032,7 @@ extern void __setfunc__init__upd__(char *init_mode, __vtmpf_t **__ptrinit__,
 //     uint64_t save_time;
 //     side_t L1, L2;
 //     sysz_t N;
-//     lttc_t *s;
+//     hlttc_t *s;
 //     nnl_t *nn;
 //     dtc_t dtc;
 //     void (*__init__)(), (*__upd__)();

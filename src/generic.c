@@ -3,12 +3,90 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <string.h>
-
+#include <sys/stat.h>
+#include <math.h>
+#include <inttypes.h>
 #include <imdefs.h>
-#include <imtdlib.h>
+#include <imdtlib.h>
 #include <imfnlib.h>
 #include <imrng.h>
-
+/* MATH FUNCTIONS *********************************************************** */
+//
+/** perform the sum of a floating point array 
+ * @param n (size_t) the number of vector components
+ * @param v (double *) the floaring point array
+ * @return (double) sum(v)
+ */
+extern double sum_vs(size_t n, double *v)
+{
+    double s = 0.;
+    for (size_t i = 0; i < n; i++)
+        s += v[i];
+    return s;
+}
+/** perform the sum of a floating point array 
+ * @param n (size_t) the number of vector components
+ * @param v (double *) the floaring point array
+ * @return (double) sum(v)
+ */
+extern double sum_vs_hlttc_t(size_t n, hlttc_t *v)
+{
+    double s = 0.;
+    for (size_t i = 0; i < n; i++)
+        s += v[i];
+    return s;
+}
+/** perform the sum of squared components of an array
+ * @param n (size_t) the number of vector components
+ * @param v (double *) the array
+ * @return (double) sum(v)
+ */
+extern double sum_vs_2(size_t n, double *v)
+{
+    double s = 0.;
+    for (size_t i = 0; i < n; i++)
+        s += v[i] * v[i];
+    return s;
+}
+/** perform the average of a floating point array 
+ * @param n (size_t) the number of replicas onto which pervorm average
+ * @param v (double *) the floaring point array
+ * @return (double) avg(v)
+ */
+extern double avg(size_t n, double *v)
+{
+    return (sum_vs(n, v) / n);
+}
+/** perform the average of a floating point array 
+ * @param n (size_t) the number of replicas onto which pervorm average
+ * @param v (hlttc_t *) the floaring point array
+ * @return (double) avg(v)
+ */
+extern double avg_hlttc_t(size_t n, hlttc_t *v)
+{
+    return (sum_vs_hlttc_t(n, v) / n);
+}
+/** perform the average of the square elements of array 
+ * @param n (size_t) the number of replicas onto which pervorm average
+ * @param v (double *) the floaring point array
+ * @return (double) avg(v)
+ */
+extern double avg_2(size_t n, double *v)
+{
+    return (sum_vs_2(n, v) / n);
+}
+/** get the ReLU(x) (or softplus) of input unsigned 32-bit integer.
+ * @param x (int32_t) a 32-bit integer 
+ * @return (uint32_t) max(0, x).
+ */
+extern uint32_t softplus_u32(int32_t x)
+{
+    if(x > 0)
+    {
+        return x;
+    }
+    return 0;
+}
 /* STRING RELATED FUNCTIONS ************************************************* */
 
 /** check if a string is in an array of strings. If so return the index of the
@@ -25,9 +103,8 @@ extern size_t strIn_(char *s, const char **ss)
     return 0;
 }
 /**
- * ...
- * @param
- * @return
+ * does not do anything
+ * @return (void) none
  */
 extern void __splash__(void)
 {
@@ -49,8 +126,8 @@ uint16_t strtou16(const char *s)
     if (c != '\0' || errno != 0)
     {
         fprintf(f_log, MSGFAIL PFCLU32 PIGOTIN "%c" MSGEXIT, c);
-        fclose(f_log);
-        exit(EXIT_FAILURE);
+        // fclose(f_log);
+        // exit(EXIT_FAILURE);
     }
     // TBD failed to scan;
     return 0;
@@ -71,18 +148,30 @@ uint32_t strtou32(const char *s)
     if (c != '\0' || errno != 0)
     {
         fprintf(f_log, MSGFAIL PFCLU32 PIGOTIN "%c" MSGEXIT, c);
-        fclose(f_log);
-        exit(EXIT_FAILURE);
+        // fclose(f_log);
+        // exit(EXIT_FAILURE);
     }
     return 0;
 }
-
-double avg(avg_t n, double *v)
+/** get a row from an open file
+ * @param row (char *) the char pointer to store the row content
+ * @param fc (FILE **) file from which to read
+ * @return (void) none
+ */
+extern void __get_row_fgets(FILE **fc, char *row)
 {
-    double s = 0.;
-    for (avg_t i = 0; i < n; i++)
-        s += v[i];
-    return (s / n);
+    if ((fgets(row, STR1024, *fc) == NULL) && (ferror(*fc)))
+    {
+        fprintf(f_log, MSGFAIL PFFGETS "%s" MSGEXIT, DUMP(*fc));
+        perror(MSG_ERR_FGETS);
+        fclose(f_log);
+        exit(EXIT_FAILURE);
+    }
+}
+extern void __2get_row_fgets(FILE **fc, char *row)
+{
+    __get_row_fgets(*fc, row);
+    __get_row_fgets(*fc, row);
 }
 
 
@@ -129,6 +218,33 @@ extern void __F_OPEN(FILE **f, const char *fn, const char *md)
     if ((*f = fopen(fn, md)) == NULL)
     {
         fprintf(f_log, MSGFAIL PFFOPEN "%s" MSGEXIT, buf);
+        exit(EXIT_FAILURE);
+    }
+}
+/** open a file according to an operative mode allowed by fopen and go to the
+ * final byte of the file
+ * @param f the file pointer
+ * @param fn the file name
+ * @param md the mode
+ * @return (void) none
+ */
+extern void __F_OPEN_SEEKEND(FILE **f, const char *fn, const char *md)
+{
+    __F_OPEN(f, fn, md);
+    fseek(*f, 0, SEEK_END);
+}
+/** open a pipe according to an operative mode allowed by fopen
+ * @param p the pipe pointer
+ * @param fn the file name
+ * @param md the mode
+ * @return (void) none
+ */
+extern void __P_OPEN(FILE **p, const char *fn, const char *md)
+{
+    if ((*p = popen(fn, md)) == NULL)
+    {
+        fprintf(f_log, MSGFAIL PFFOPEN "%s" MSGEXIT, fn);
+        perror("Pipe Error: ");
         exit(EXIT_FAILURE);
     }
 }

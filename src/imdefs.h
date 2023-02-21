@@ -38,6 +38,8 @@
 #define _NT_V _NT __V /*                                           "\\n\\t |" */
 #define _N_WT _N_ _WT /*                                      "\\n !\\t |\\t" */
 /**/
+#define _NT_V_ _NT __V __ /*                                      "\\n\\t | " */
+/**/
 #define _SARW "->"
 #define _LARW "-->"
 #define _TTSARW _TT _SARW
@@ -46,6 +48,8 @@
 /**/
 #define _UMOD _U "MODE="
 #define _UCFG _U "CONF="
+/**/
+#define MSG_ERR_FGETS "Error (fgets)"
 /**/
 #define MSGFAIL _N _LLPFI " PROGRAM FAILURE: "
 #define MSGWARN _N _LLPWI " WARNING: "
@@ -79,10 +83,12 @@
 #define DIRlog DIRres "log/"
 #define DIRvbc DIRres "vbc/"
 #define DIRobs DIRres "obs/"
+#define DIRcha DIRres "obs_c/"
 #define DIRunc DIRres "unconf/"
 /**/
 #define STR_bt "bt"
 #define STR_T "T"
+#define STR_K "K"
 #define STR_N  "N"
 #define STR_L1 "L1"
 #define STR_L2 "L2"
@@ -92,32 +98,54 @@
 #define FMT_na "%" PRIu16
 #define FMT_L  "%" PRIu16
 #define FMT_N  "%" PRIu32
+#define FMT_K  "%" PRIu32
 
-#define __L1IS STR_L1 _E                                             /* "L1=" */
-#define __L2IS STR_L2 _E                                             /* "L2=" */
-#define __NIS  STR_N  _E                                             /* "N="  */
-#define __BTIS STR_bt _E                                             /* "bt=" */
-#define __TIS  STR_T  _E                                              /* "T=" */
+#define _FMT_K_  "[" FMT_K "]"
+
+#define __L1IS STR_L1 _E /* "L1=" */
+#define __L2IS STR_L2 _E /* "L2=" */
+#define __NIS  STR_N  _E /* "N="  */
+#define __BTIS STR_bt _E /* "bt=" */
+#define __TIS  STR_T  _E /* "T=" */
+#define __KIS  STR_K  _E /* "K=" */
 
 #define __L1IS__ __L1IS FMT_L
 #define __L2IS__ __L2IS FMT_L
 #define __BTIS__ __BTIS FMT_bt
 #define __NIS__  __NIS  FMT_N
 #define __TIS__  __TIS  FMT_T
-
+#define __KIS__  __KIS  FMT_K
 #define __L1IS_L2IS__ __L1IS__ _U __L2IS__
 
+/* operating modes list*/
+#define __MODE  "--"
+#define MODE_PRINTC__ "print_c"
+#define MODE_CHKRNG__ "check_sfmt"
+#define MODE_ACFCOR__ "acf"
+#define MODE_GENCON__ "gen_conf"
+#define MODE_GENUNC__ "gen_unconf"
+#define MODE_KGENCN__ "gen_kconf"
+#define MODE_PRINTC __MODE MODE_PRINTC__ /* "--print_c" */
+#define MODE_CHKRNG __MODE MODE_CHKRNG__ /* "--check_sfmt" */
+#define MODE_ACFCOR __MODE MODE_ACFCOR__ /* "--acf" */
+#define MODE_GENCON __MODE MODE_GENCON__ /* "--gen_conf" */
+#define MODE_GENUNC __MODE MODE_GENUNC__ /* "--gen_unconf" */
+#define MODE_KGENCN __MODE MODE_KGENCN__ /* "--gen_kconf" */
+/* options in config files */
+#define _M_HSU "hs_unif"
+#define _M_CSU "cs_unif"
+#define _M_MEHA_SS "meha_ss"
+#define _M_MEHA_SA "meha_sa"
+/* save names for config files */
+#define ISING1DHSSA "ISING1D-HSSA"
+#define ISING1DHSSS "ISING1D-HSSS"
+#define ISING1DMKVP "ISING1D-MKVP"
+#define ISING2DHSSA "ISING2D-HSSA"
+#define ISING2DCSSA "ISING2D-CSSA"
+#define ISING2DHSSS "ISING2D-HSSS"
+#define ISING2DCSSS "ISING2D-CSSS"
 
-
-
-
-
-
-#define MARKOVCHAIN "MARKOVCHAIN"
-#define ISING2DHSAS "ISING2D-HSAS"
-
-
-
+#define STR_FIND "find"
 
 
 #define PFNARGC _N_VT "wrong number of arguments (argc) passed."
@@ -126,6 +154,8 @@
 #define PFCLDBL _N_VT "expected double type as command line input."
 #define PFEXECV _N_VT "error executing (execv) " _SARW
 #define PFFOPEN _N_VT "error opening file " _SARW
+#define PFPOPEN _N_VT "error opening pipe " _SARW
+#define PFFGETS _N_VT "error reads characters from stream " _SARW
 #define PFGCCMP _N_VT "error gcc-compiling " _SARW
 #define PFMEMAL _N_VT "error allocating memory " _SARW
 #define PFNKNUM _N_VT "not enough KNUM patterns for coupling matrices."
@@ -168,63 +198,11 @@
 #define PRIconf PRIconfUNSGND
 #define FPRIconf FPRIconfUNSGND
 
-extern FILE *f_log;
-extern char buf[1024];
+#define NMODES 5
+#define NMODESC 5
 
-#define NMODES 4
-#define NMODESC 4
+#define STR256 256
+#define STR512 512
+#define STR1024 1024
 
 #endif /* __IMDEFS_H_INC__ */
-
-
-
-
-// void f1_mod1(...)
-// {
-//     //do domething
-// }
-
-// void f1_mod2(...)
-// {
-//     //do something else
-// }
-
-// void f2_mod1(...)
-// {
-//     //do something 2
-// }
-
-// void f2_mod2(...)
-// {
-//     //do something 2
-// }
-
-// void __thefunctioniwouldlike(char *f1n, void *__f1__, char *f2n, *__f2__)
-// {
-//     if (strcmp(f1n, "mod1") == 0)
-//         __f1__ = f1_mod1;
-//     else if (strcmp(f1n, "mod2") == 0)
-//         __f1__ = f1_mod2;
-//     else 
-//         __f1__ = NULL;
-//     if (strcmp(f2n, "mod1") == 0)
-//         __f2__ = f2_mod1;
-//     else if (strcmp(f1n, "mod2") == 0)
-//         __f2__ = f2_mod2;
-//     else 
-//         __f1__ = NULL;
-// }
-
-
-// void extfunc(...)
-// {
-//     // ...
-//     char *f1n = "mod1";
-//     char *f2n = "mod2";
-//     void (*__f1__)(), (*__f2__)();
-//     __thefunctioniwouldlike(f1n, __f1__, f2n, __f2__);
-//     // execute f1_mod1
-//     __f1__(...);
-//     // execute f2_mod2
-//     __f2__(...);
-// }

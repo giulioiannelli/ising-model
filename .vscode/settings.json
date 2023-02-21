@@ -22,7 +22,14 @@
         "errno.h": "c",
         "stdio.h": "c",
         "string.h": "c",
-        "stat.h": "c"
+        "stat.h": "c",
+        "deque": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "imdtlib.h": "c"
     },
     "cmake.configureOnOpen": true,
     "editor.rulers": [80, 120]
