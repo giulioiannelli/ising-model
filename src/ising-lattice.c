@@ -27,7 +27,7 @@ vtmpf_t *FUNCS[] = {__print_conf,
 
 int main(int argc, char *argv[])
 {
-    /*//////////////////////////////////////////// open log file, seed the RNG*/
+    /*///////////////////////////////////////////////////// open log, seed RNG*/
     //
     __MAKElog(argc, argv);
     __setSFMT_seed_rand();
