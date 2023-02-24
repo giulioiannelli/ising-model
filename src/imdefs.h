@@ -207,8 +207,8 @@
 
 #define STR_TOK_COMMA strtok(NULL, ",")
 
-#define HEADER_DT_SMDTC_I2D "K,L1,L2,Navg,b,_m_init,_m_upd\n"
-#define HEADER_DT_DTC_I2D "tMC,N_M,nconf,_m_sav,Navg,L1,L2,Ls,b_m,b_M,b_s,_m_mea,_m_init,_m_upd\n"
+#define HEADER_DT_SMDTC_I2D "K,L1,L2,Navg,b,_m_ini,_m_upd\n"
+#define HEADER_DT_DTC_I2D "tMC,N_M,nconf,_m_sav,Navg,L1,L2,Ls,b_m,b_M,b_s,_m_mea,_m_ini,_m_upd\n"
 #define HEADER_DT_IMCD_I2D "<todo>"
 
 #endif /* __IMDEFS_H_INC__ */

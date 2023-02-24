@@ -43,7 +43,7 @@ typedef struct config_one_c
     sysz_t _m_sav;
     double b;
     double ti;
-    char _m_init[128];
+    char _m_ini[128];
     char _m_upd[128];
     bool _m_mea;
 } imcd_t;
@@ -61,7 +61,7 @@ typedef struct config_one_l
     double b;
     double ti;
     bool _m_mea;
-    char _m_init[128];
+    char _m_ini[128];
     char _m_upd[128];
 } smdtc_t;
 typedef struct data_config_l
@@ -78,7 +78,7 @@ typedef struct data_config_l
     double b_M;
     double b_s;
     bool _m_mea;
-    char _m_init[128];
+    char _m_ini[128];
     char _m_upd[128];
 } dtc_t;
 
@@ -89,7 +89,7 @@ typedef struct dataStruct_Nandbeta
     sysz_t _m_sav;
     avg_t Navg;
     double b;
-    char _m_init[128];
+    char _m_ini[128];
     char _m_upd[128];
 } dsNb_t;
 

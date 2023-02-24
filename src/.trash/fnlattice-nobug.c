@@ -119,7 +119,7 @@ extern void __fscanf_configfile(dtc_t *d, char *config_fn)
     //     printf("Error in config file\n");
     // if (fscanf(fconf, "%lf%lf%lf", &d->b_m, &d->b_M, &d->b_s) != 3)
     //     printf("Error in config file\n");
-    // if (fscanf(fconf, "%s", d->_m_init) != 1)
+    // if (fscanf(fconf, "%s", d->_m_ini) != 1)
     //     printf("Error in config file\n");
     // if (fscanf(fconf, "%s", d->_m_upd) != 1)
     //     printf("Error in config file\n");
@@ -155,7 +155,7 @@ extern void __fscanf_configfile(dtc_t *d, char *config_fn)
     tok = strtok(NULL, ",");
     d->b_s = strtod(tok, &endptr);
     tok = strtok(NULL, ",");
-    strcpy(d->_m_init, tok);
+    strcpy(d->_m_ini, tok);
     tok = strtok(NULL, ",");
     strcpy(d->_m_upd, tok);
     tok = strtok(NULL, ",");
@@ -176,7 +176,7 @@ extern void __printf_configfile(dtc_t d, char *config_fn)
     printf(_T "b_m\t%lf\n", d.b_m);
     printf(_T "b_M\t%lf\n", d.b_M);
     printf(_T "b_s\t%lf\n", d.b_s);
-    printf(_T "_m_init\t%s\n", d._m_init);
+    printf(_T "_m_ini\t%s\n", d._m_ini);
     printf(_T "_m_upd\t%s\n", d._m_upd);
     printf(_T "_m_mea\t%d\n", d._m_mea);
 }
@@ -459,9 +459,9 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     sprintf(_dirsz, "--gen_config");
     __mkdir_syszN(_dirsz, L1, L2, N);
     /*///////////////////////////////////////////////////////// set init mode */
-    if (strcmp(d._m_init, "hs_unif") == 0)
+    if (strcmp(d._m_ini, "hs_unif") == 0)
         __init__ = __init_hotstart_uniform;
-    else if (strcmp(d._m_init, "cs_unif") == 0)
+    else if (strcmp(d._m_ini, "cs_unif") == 0)
         __init__ = __init_coldstart;
     else
         __init__ = NULL;
@@ -515,7 +515,7 @@ extern void __compute_acf(char *config_fn)
     Ls = d.Ls;
     N = (L1 * L2);
     d1._m_mea = d._m_mea;
-    strcpy(d1._m_init, d._m_init);
+    strcpy(d1._m_ini, d._m_ini);
     strcpy(d1._m_upd, d._m_upd);
     /*/////////////////////////////////////////////////////////////////////// */
     while (N <= d.N_M)

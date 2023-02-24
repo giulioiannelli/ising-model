@@ -118,7 +118,7 @@ extern void __gen__obs_acfN(imcd_t d, obs_t O)
     vtmpf_t *__measure__ = __measure_OBS;
     /**/
     __alloc_fill_s(&s, d);
-    __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
+    __setfunc__init__upd__(d._m_ini, &__init__, d._m_upd, &__upd__);
     /**/
     __init__(d.N, s);
     for (sysz_t t = 1; t < d.N; t++)
@@ -150,7 +150,7 @@ extern void __fscanf_Nb_configfile(imcd_t *d, char *config_fn)
     tok = strtok(NULL, ",");
     d->b = strtod(tok, &ep);
     tok = strtok(NULL, ",");
-    strcpy(d->_m_init, tok);
+    strcpy(d->_m_ini, tok);
     tok = strtok(NULL, ",");
     strcpy(d->_m_upd, tok);
     d->tMC = d->N;
@@ -165,7 +165,7 @@ extern void __fscanf_Nb_configfile(imcd_t *d, char *config_fn)
 extern void __sprintf_obsN(char *_dirat, imcd_t d)
 {
     sprintf(_dirat, DIRcha __NIS__ _H "%s" _H "%s" _S,
-        d.N, d._m_init, d._m_upd);
+        d.N, d._m_ini, d._m_upd);
 }
 /** create string path to observable folder with configurational parameters
  * @param _dirat (char *) the string onto which sprint the path
@@ -175,7 +175,7 @@ extern void __sprintf_obsN(char *_dirat, imcd_t d)
 extern void __sprintf_obsNb(char *_dirat, imcd_t d)
 {
     sprintf(_dirat, DIRcha __NIS__ _H "%s" _H "%s" _S __BTIS__ _S,
-        d.N, d._m_init, d._m_upd, d.b);
+        d.N, d._m_ini, d._m_upd, d.b);
 }
 /** create string path to observable folder with configurational parameters and
  * make directory if it does not exists
@@ -278,24 +278,24 @@ extern void __setsave_time(imcd_t d, sysz_t *st)
 extern void __mkdir_MOD(const char *mode, char *_dirsz, imcd_t d)
 {
     if (strcmp(mode, "--acf") == 0)
-        sprintf(_dirsz, DIRcha __NIS__ _H "%s" _H "%s" _S, d.N, d._m_init, d._m_upd);
+        sprintf(_dirsz, DIRcha __NIS__ _H "%s" _H "%s" _S, d.N, d._m_ini, d._m_upd);
     else if (strcmp(mode, "--gen_config") == 0)
-        sprintf(_dirsz, DIRvbc __NIS__ _H "%s" _H "%s" _S, d.N, d._m_init, d._m_upd);
+        sprintf(_dirsz, DIRvbc __NIS__ _H "%s" _H "%s" _S, d.N, d._m_ini, d._m_upd);
     else if (strcmp(mode, MODE_KGENCN) == 0)
-        sprintf(_dirsz, DIRunc "%s" _H "%s" _S,d._m_init, d._m_upd);
+        sprintf(_dirsz, DIRunc "%s" _H "%s" _S,d._m_ini, d._m_upd);
     mkdir(_dirsz, ACCESSPERMS);
 }
 
 extern void __get_P_TYPE(imcd_t d, char *ptype)
 {
-    if (strcmp(d._m_init, _M_HSU) == 0)
+    if (strcmp(d._m_ini, _M_HSU) == 0)
     {
         if (strcmp(d._m_upd, _M_MEHA_SA) == 0)
             sprintf(ptype, ISING1DHSSA);
         else if (strcmp(d._m_upd, _M_MEHA_SS) == 0)
             sprintf(ptype, ISING1DHSSS);
     }
-    else if (strcmp(d._m_init, _M_CSU) == 0)
+    else if (strcmp(d._m_ini, _M_CSU) == 0)
     {
         if (strcmp(d._m_upd, _M_MEHA_SA) == 0)
             sprintf(ptype, ISING2DCSSA);
@@ -368,7 +368,7 @@ extern void __wbrite_nconf_d(imcd_t d)
     /**/
     d.tMC = d.K * d._m_sav;
     __alloc_fill_s(&s, d);
-    __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
+    __setfunc__init__upd__(d._m_ini, &__init__, d._m_upd, &__upd__);
     __setsave_time(d, &St);
     /**/
     __mkdir_MOD(MODE_KGENCN, _dirsz, d);

@@ -166,7 +166,7 @@ extern void __fscanf_dtc(FILE **fc, dtc_t *d)
     d->b_M = strtod(STR_TOK_COMMA, &ep);
     d->b_s = strtod(STR_TOK_COMMA, &ep);
     d->_m_mea = (bool) strtol(STR_TOK_COMMA, (char **)NULL, 10);
-    strcpy(d->_m_init, STR_TOK_COMMA);
+    strcpy(d->_m_ini, STR_TOK_COMMA);
     strcpy(d->_m_upd, STR_TOK_COMMA);
 }
 /** scan from configuration file the single realization struct
@@ -178,14 +178,16 @@ extern void __fscanf_smdtc(FILE **fc, smdtc_t *d)
 {
     char *ep;
     __get_row_fgets(fc, row);
-    d->tMC = strtou32(strtok(row, ","));
+    d->K = strtou32(strtok(row, ","));
     d->L1 = strtou16(STR_TOK_COMMA);
     d->L2 = strtou16(STR_TOK_COMMA);
     d->N = d->L1 * d->L2;
     d->tMC = d->N;
+    d->_m_sav = 0;
+    d->_m_mea = true;
     d->Navg = strtou16(STR_TOK_COMMA);
-    d->b = strtod(STR_TOK_COMMA, &ep);;
-    strcpy(d->_m_init, STR_TOK_COMMA);
+    d->b = strtod(STR_TOK_COMMA, &ep);
+    strcpy(d->_m_ini, STR_TOK_COMMA);
     strcpy(d->_m_upd, STR_TOK_COMMA);
 }
 extern void __printf_dtc(dtc_t d)
@@ -202,7 +204,7 @@ extern void __printf_dtc(dtc_t d)
     printf(_T "b_m\t%.3g\n", d.b_m);
     printf(_T "b_M\t%.3g\n", d.b_M);
     printf(_T "b_s\t%.3g\n", d.b_s);
-    printf(_T "_m_init\t%s\n", d._m_init);
+    printf(_T "_m_ini\t%s\n", d._m_ini);
     printf(_T "_m_upd\t%s\n", d._m_upd);
     printf(_T "_m_mea\t%d\n", d._m_mea);
 }
@@ -215,7 +217,7 @@ extern void __printf_smdtc(smdtc_t d)
     printf(_T "Navg\t%" SCNu16"\n", d.Navg);
     printf(_T "L1\t%" SCNu16"\n", d.L1);
     printf(_T "L2\t%" SCNu16"\n", d.L2);
-    printf(_T "_m_init\t%s\n", d._m_init);
+    printf(_T "_m_ini\t%s\n", d._m_ini);
     printf(_T "_m_upd\t%s\n", d._m_upd);
     printf(_T "_m_mea\t%d\n", d._m_mea);
 }
@@ -248,7 +250,7 @@ extern void __set_localdtc(smdtc_t *d1, dtc_t *d)
     d1->tMC = d->tMC;
     d1->_m_mea = d->_m_mea;
     d1->_m_sav = d->_m_sav;
-    strcpy(d1->_m_init, d->_m_init);
+    strcpy(d1->_m_ini, d->_m_ini);
     strcpy(d1->_m_upd, d->_m_upd);
 }
 extern void __upd_localdtc(smdtc_t *d1, double b)
@@ -268,22 +270,22 @@ extern void __mkdir_MOD_syszL1L2(const char *mode, char *_dirsz, smdtc_t d)
     if (d.L1 == d.L2)
     {
         if (strcmp(mode, "--acf") == 0)
-            sprintf(_dirsz, DIRobs __NIS__ _H "%s" _H "%s" _S, d.L1*d.L2, d._m_init, d._m_upd);
+            sprintf(_dirsz, DIRobs __NIS__ _H "%s" _H "%s" _S, d.L1*d.L2, d._m_ini, d._m_upd);
         else if (strcmp(mode, "--gen_config") == 0)
-            sprintf(_dirsz, DIRvbc __NIS__ _H "%s" _H "%s" _S, d.L1*d.L2, d._m_init, d._m_upd);
+            sprintf(_dirsz, DIRvbc __NIS__ _H "%s" _H "%s" _S, d.L1*d.L2, d._m_ini, d._m_upd);
         else if (strcmp(mode, "--gen_unconf") == 0)
-            sprintf(_dirsz, DIRunc "%s" _H "%s" _S, d._m_init, d._m_upd);
+            sprintf(_dirsz, DIRunc "%s" _H "%s" _S, d._m_ini, d._m_upd);
         else if (strcmp(mode, "--gen_kconf") == 0)
             sprintf(_dirsz, DIRunc);
     }
     else
     {
         if (strcmp(mode, "--acf") == 0)
-            sprintf(_dirsz, DIRobs __L1IS_L2IS__ _H "%s" _H "%s" _S, d.L1, d.L2, d._m_init, d._m_upd);
+            sprintf(_dirsz, DIRobs __L1IS_L2IS__ _H "%s" _H "%s" _S, d.L1, d.L2, d._m_ini, d._m_upd);
         else if (strcmp(mode, "--gen_config") == 0)
-            sprintf(_dirsz, DIRvbc __L1IS_L2IS__ _H "%s" _H "%s" _S, d.L1, d.L2, d._m_init, d._m_upd);
+            sprintf(_dirsz, DIRvbc __L1IS_L2IS__ _H "%s" _H "%s" _S, d.L1, d.L2, d._m_ini, d._m_upd);
         else if (strcmp(mode, "--gen_unconf") == 0)
-            sprintf(_dirsz, DIRunc "%s" _H "%s" _S,d._m_init, d._m_upd);
+            sprintf(_dirsz, DIRunc "%s" _H "%s" _S,d._m_ini, d._m_upd);
     }
     mkdir(_dirsz, ACCESSPERMS);
 }
@@ -425,7 +427,7 @@ extern void __gen_config_(smdtc_t d, obs_t O)
     d.tMC *= d.N;
     __alloc_fill_snn(&s, &nn, d);
     /*///////////////////////////////////////////// create folder for results */
-    __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
+    __setfunc__init__upd__(d._m_ini, &__init__, d._m_upd, &__upd__);
     __setsave_time(d, &save_time);
     __setmeasureOBS(d, &__measure__);
     /*///////////////////////////////////////////// create folder for results */
@@ -467,7 +469,7 @@ extern void __readTauint_tmp(smdtc_t *d1, dtc_t d, side_t L1, side_t L2)
     double tauint;
     __mkdir_obsN(_diracfti, *d1);
     sprintf(buf, DIRobs __NIS__ _H "%s" _H "%s" _S __BTIS__ _S "tauint_avg=" FMT_na EXTBIN,
-            L1*L2, d._m_init, d._m_upd, d1->b, d.Navg);
+            L1*L2, d._m_ini, d._m_upd, d1->b, d.Navg);
     __F_OPEN(&fti, buf, "rb");
     if (fread(&tauint, sizeof(double), ONE, fti) != ONE)
     {
@@ -528,14 +530,14 @@ extern void __translate_dsNb_smdtc(dsNb_t d, smdtc_t *d1)
     d1->tMC = d.N;
     d1->b = d.b;
     d1->_m_sav = d._m_sav;
-    strcpy(d1->_m_init, d._m_init);
+    strcpy(d1->_m_ini, d._m_ini);
     strcpy(d1->_m_upd, d._m_upd);
 }
 extern void __translate_smdtc_dsNb(dsNb_t *d1, smdtc_t d)
 {
     d1->N = d.L1 * d.L2;
     d1->b = d.b;
-    strcpy(d1->_m_init, d._m_init);
+    strcpy(d1->_m_ini, d._m_ini);
     strcpy(d1->_m_upd, d._m_upd);
 }
 
@@ -553,7 +555,7 @@ extern void __gen__obs_acfN(smdtc_t d, obs_t O)
     vtmpf_t *__measure__ = __measure_OBS;
     /**/
     __alloc_fill_snn(&s, &nn, d);
-    __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
+    __setfunc__init__upd__(d._m_ini, &__init__, d._m_upd, &__upd__);
     /**/
     __init__(d.N, s);
     for (sysz_t t = 1; t < d.N; t++)
@@ -574,7 +576,7 @@ extern void __gen__obs_acfN(smdtc_t d, obs_t O)
 extern void __sprintf_obsN(char *_dirat, smdtc_t d)
 {
     sprintf(_dirat, DIRobs __NIS__ _H "%s" _H "%s" _S,
-        d.N, d._m_init, d._m_upd);
+        d.N, d._m_ini, d._m_upd);
 }
 /** create string path to observable folder with configurational parameters
  * @param _dirat (char *) the string onto which sprint the path
@@ -584,7 +586,7 @@ extern void __sprintf_obsN(char *_dirat, smdtc_t d)
 extern void __sprintf_obsNb(char *_dirat, smdtc_t d)
 {
     sprintf(_dirat, DIRobs __NIS__ _H "%s" _H "%s" _S __BTIS__ _S,
-        d.N, d._m_init, d._m_upd, d.b);
+        d.N, d._m_ini, d._m_upd, d.b);
 }
 
 /** create string path to observable folder with configurational parameters and
@@ -664,7 +666,6 @@ extern void __ifNETauint_makeit(smdtc_t d)
 {
     char _dirsti[STR512];
     __mkdir_obsN(_dirsti, d);
-    printf("%u\n", d.Navg);
     sprintf(buf, "%stauint_avg=" FMT_na EXTBIN, _dirsti, d.Navg);
     if (F_NEXIST(buf))
         __makeTauint(d);
@@ -713,7 +714,7 @@ extern void __wbrite_nconf_d(smdtc_t d)
     /**/
     d.tMC = d.K * d._m_sav;
     __alloc_fill_snn(&s, &nn, d);
-    __setfunc__init__upd__(d._m_init, &__init__, d._m_upd, &__upd__);
+    __setfunc__init__upd__(d._m_ini, &__init__, d._m_upd, &__upd__);
     __setsave_time(d, &St);
     /**/
     __mkdir_MOD_syszL1L2(MODE_KGENCN, _dirsz, d);
@@ -739,14 +740,14 @@ extern void __wbrite_nconf_d(smdtc_t d)
 
 extern void __get_P_TYPE(smdtc_t d, char *ptype)
 {
-    if (strcmp(d._m_init, _M_HSU) == 0)
+    if (strcmp(d._m_ini, _M_HSU) == 0)
     {
         if (strcmp(d._m_upd, _M_MEHA_SA) == 0)
             sprintf(ptype, ISING2DHSSA);
         else if (strcmp(d._m_upd, _M_MEHA_SS) == 0)
             sprintf(ptype, ISING2DHSSS);
     }
-    else if (strcmp(d._m_init, _M_CSU) == 0)
+    else if (strcmp(d._m_ini, _M_CSU) == 0)
     {
         if (strcmp(d._m_upd, _M_MEHA_SA) == 0)
             sprintf(ptype, ISING2DCSSA);
