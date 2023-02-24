@@ -22,13 +22,22 @@ double SFMTrng_dbl(void)
 {
     return sfmt_genrand_res53(&sfmt);
 }
+/**
+ * set the seed of sfmt rng by array.
+ * @return (void) none
+ */
+extern void __setSFMT_seed_rand(void)
+{
+    seed_rand = (uint32_t[LENSRND]){SEED, SIID, LSEED, RSEED};
+    sfmt_init_by_array(&sfmt, seed_rand, LENSRND);
+}
 /** TBD
  */
 void __check_RNG(void)
 {
     for (int i = 0; i < PRIrngN; i++)
     {
-        printf("rand_%d: (double) %.3g," _T "(uint64_t) %" PRIu64 "\n",
+        printf("rand_%d: (double) %.3g,\t(uint64_t) %" PRIu64 "\n",
                i, RNG_dbl(), RNG_u64());
     }
 }

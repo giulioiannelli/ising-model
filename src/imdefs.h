@@ -185,7 +185,6 @@
 #define J 1.                /* coupling strenght*/
 #define ONE 1               /* number one */
 #define TWO 2               /* number two */
-#define LENSRND 4           /* seed array for sfmt length */
 #define MAX_tMCMC 10        /**/
 #define Tc (2. / ln(1 + sqrt(2)))
 

@@ -265,15 +265,6 @@ extern void __CHECKargc(int argc, int NARG)
     }
 }
 /**
- * set the seed of sfmt rng by array.
- * @return (void) none
- */
-extern void __setSFMT_seed_rand(void)
-{
-    seed_rand = (uint32_t[LENSRND]){SEED, SIID, LSEED, RSEED};
-    sfmt_init_by_array(&sfmt, seed_rand, LENSRND);
-}
-/**
  * open log file and initialize it with program name and argument from CLI.
  * @param argc the number of arguments passed through CLI
  * @param progn the name of the program
