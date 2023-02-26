@@ -7,6 +7,7 @@
 #define __IMRNG_H_INC__
 
 #define LENSRND 4           /* seed array for sfmt length */
+#define PRIrngN 10
 
 #define SEED (uint32_t)0xBE11AC1A0
 #define SIID (uint32_t)0xC1A0BE11A

@@ -2,8 +2,6 @@
 #include <inttypes.h>
 #include <SFMT.h>
 #include <imrng.h>
-/**/
-#define PRIrngN 10
 /**
  * generate and return 64-bit pseudorandom number.
  * init_gen_rand or init_by_array must be called before this function.
