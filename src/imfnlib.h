@@ -12,8 +12,7 @@ extern double avg_hlttc_t(size_t n, hlttc_t *v);
 extern double avg_2(size_t n, double *v);
 
 
-
-
+extern bool F_NEXIST(const char *n);
 
 
 
@@ -31,8 +30,8 @@ extern uint16_t strtou16(const char *s);
 extern uint32_t softplus_u32(int32_t);
 extern uint32_t strtou32(const char *s);
 
-extern bool F_EEXIST(const char *);
-extern bool F_NEXIST(const char *);
+extern bool __feexist(const char *);
+extern bool __fnexist(const char *);
 extern void __F_OPEN(FILE **, const char *, const char *);
 extern void __F_OPEN_SEEKEND(FILE **, const char *, const char *);
 extern void __P_OPEN(FILE **p, const char *fn, const char *md);

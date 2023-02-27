@@ -3,6 +3,7 @@
 #include <imdtlib.h>
 #include <imfnlib.h>
 #include <imrng.h>
+#include <imclib.h>
 
 int MODE;
 md_t run[NMODESC];
@@ -16,6 +17,12 @@ FILE *f_log;
 
 int main(int argc, char *argv[])
 {
-    return argc + (int) *argv[0];
+    /*///////////////////////////////////////////////////// open log, seed RNG*/
+    //
+    __MAKElog(argc, argv);
+    __setSFMT_seed_rand();
+    __gen_kconf(argv[1]);
+    fclose(f_log);
+    return 0;
 }
  

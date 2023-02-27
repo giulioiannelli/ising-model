@@ -282,7 +282,7 @@ extern void __mkdir_MOD(const char *mode, char *_dirsz, imcd_t d)
     else if (strcmp(mode, "--gen_config") == 0)
         sprintf(_dirsz, DIRvbc __NIS__ _H "%s" _H "%s" _S, d.N, d._m_ini, d._m_upd);
     else if (strcmp(mode, MODE_KGENCN) == 0)
-        sprintf(_dirsz, DIRunc "%s" _H "%s" _S,d._m_ini, d._m_upd);
+        sprintf(_dirsz, DIRunc);
     mkdir(_dirsz, ACCESSPERMS);
 }
 

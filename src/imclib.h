@@ -28,4 +28,6 @@ extern void __Tauint(imcd_t d);
 
 extern void __wbrite_nconf_d(imcd_t d);
 
+extern void __gen_kconf(char *config_fn);
+
 #endif

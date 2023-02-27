@@ -218,7 +218,8 @@ extern void __F_OPEN(FILE **f, const char *fn, const char *md)
 {
     if ((*f = fopen(fn, md)) == NULL)
     {
-        fprintf(f_log, MSGFAIL PFFOPEN "%s" MSGEXIT, buf);
+        fprintf(f_log, MSGFAIL PFFOPEN "%s" MSGEXIT, fn);
+        perror("FILE ERROR");
         exit(EXIT_FAILURE);
     }
 }
@@ -272,13 +273,26 @@ extern void __CHECKargc(int argc, int NARG)
  */
 extern void __MAKElog(int argc, char *argv[])
 {
-    sprintf(buf, DIRlog "%s" _UCFG "%s" EXTLOG, argv[0] + strlen(DIR), argv[1] + strlen(DIRcfg) + 1);
-    if ((f_log = fopen(buf, "w+")) == NULL)
-    {
-        printf(MSGFAIL PFFOPEN "%s" MSGEXIT, buf);
-        exit(EXIT_FAILURE);
-    }
-    fprintf(f_log, LOGHEAD "%s" MSGINFO, argv[0] + strlen(DIR));
+    const char *exename = strrchr(argv[0], '/');
+    char *fname = strrchr(argv[1], '/');
+    char argv_tmp[STR1024];
+    char cwd[512];
+    
+    strcpy(argv_tmp, fname);
+    fname = argv_tmp;
+    
+    if (exename)
+        ++exename;
+    else
+        exename = argv[0];
+    if (fname)
+        ++fname;
+    fname[strlen(fname)-4] = '\0';
+
+    sprintf(buf, DIRlog "%s" _UCFG "%s" EXTLOG, exename, fname);
+
+    __F_OPEN(&f_log, buf, "w+");
+    fprintf(f_log, LOGHEAD "%s" MSGINFO, exename);
     for (int i = 0; i < argc; i++)
         fprintf(f_log, (i < argc - 1 ? "%s " : "%s"), argv[i]);
 }
