@@ -260,10 +260,10 @@ extern void __readTauint(imcd_t *d)
  * @param d (imcd_t) the single realization struct
  * @return (void) none
  */
-extern void __Tauint(imcd_t d)
+extern void __Tauint(imcd_t *d)
 {
-    __ifNETauint_makeit(d);
-    __readTauint(&d);
+    __ifNETauint_makeit(*d);
+    __readTauint(d);
 }
 
 
@@ -322,7 +322,7 @@ extern void __find_effKCFGS(imcd_t *d)
     char P_TYPE[STR256];
     __get_P_TYPE(*d, P_TYPE);
     __make_buffind(*d, P_TYPE);
-    __P_OPEN(&pipe, buf, "r");
+    __popen(&pipe, buf, "r");
 
     if (fgets(buf, sizeof(buf), pipe) == NULL)
     {
@@ -380,12 +380,13 @@ extern void __wbrite_nconf_d(imcd_t d)
     for (sysz_t i = 0; i < d.mK; i++)
     {
         __init__(d.N, s);
-        for (sysz_t t = 0; t < St; t++)
+        for (sysz_t t = 0; t < St * 2; t++)
             __upd__(d.b, d.N, s);
         __fwrite_cfg(&fo, d.N, s);
     }
     free(s);
     fclose(fo);
+
     /**/
     __rename_cfgpth(d, _dirsz, P_TYPE);
 }

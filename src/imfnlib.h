@@ -34,7 +34,7 @@ extern bool __feexist(const char *);
 extern bool __fnexist(const char *);
 extern void __F_OPEN(FILE **, const char *, const char *);
 extern void __F_OPEN_SEEKEND(FILE **, const char *, const char *);
-extern void __P_OPEN(FILE **p, const char *fn, const char *md);
+extern void __popen(FILE **p, const char *fn, const char *md);
 extern void __challoc(void *);
 extern void __CHECKargc(int, int);
 extern void __setSFMT_seed_rand(void);

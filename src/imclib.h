@@ -24,7 +24,7 @@ extern void __mkdir_obsN(char *_dirat, imcd_t d);
 extern void __makeTauint(imcd_t d);
 extern void __ifNETauint_makeit(imcd_t d);
 extern void __readTauint(imcd_t *d);
-extern void __Tauint(imcd_t d);
+extern void __Tauint(imcd_t *d);
 
 extern void __wbrite_nconf_d(imcd_t d);
 

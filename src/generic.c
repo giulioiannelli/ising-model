@@ -219,7 +219,7 @@ extern void __F_OPEN(FILE **f, const char *fn, const char *md)
     if ((*f = fopen(fn, md)) == NULL)
     {
         fprintf(f_log, MSGFAIL PFFOPEN "%s" MSGEXIT, fn);
-        perror("FILE ERROR");
+        perror(fn);
         exit(EXIT_FAILURE);
     }
 }
@@ -241,7 +241,7 @@ extern void __F_OPEN_SEEKEND(FILE **f, const char *fn, const char *md)
  * @param md the mode
  * @return (void) none
  */
-extern void __P_OPEN(FILE **p, const char *fn, const char *md)
+extern void __popen(FILE **p, const char *fn, const char *md)
 {
     if ((*p = popen(fn, md)) == NULL)
     {
@@ -276,7 +276,7 @@ extern void __MAKElog(int argc, char *argv[])
     const char *exename = strrchr(argv[0], '/');
     char *fname = strrchr(argv[1], '/');
     char argv_tmp[STR1024];
-    char cwd[512];
+    // char cwd[512];
     
     strcpy(argv_tmp, fname);
     fname = argv_tmp;

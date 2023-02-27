@@ -34,7 +34,7 @@ extern void __print_conf(char *config_fn)
     FILE *fconf;
     dtc_t dtc;
     smdtc_t smdtc;
-    imcd_t imcd;
+    // imcd_t imcd;
     /**/
     __F_OPEN(&fconf, config_fn, "r+");
     __get_row_fgets(&fconf, row);

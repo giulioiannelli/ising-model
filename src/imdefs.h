@@ -137,13 +137,24 @@
 #define _M_MEHA_SS "meha_ss"
 #define _M_MEHA_SA "meha_sa"
 /* save names for config files */
-#define ISING1DHSSA "ISING1D-HSSA"
-#define ISING1DHSSS "ISING1D-HSSS"
-#define ISING1DMKVP "ISING1D-MKVP"
-#define ISING2DHSSA "ISING2D-HSSA"
-#define ISING2DCSSA "ISING2D-CSSA"
-#define ISING2DHSSS "ISING2D-HSSS"
-#define ISING2DCSSS "ISING2D-CSSS"
+#define ISING1D "ising1d" /* ising1d */
+#define ISING2D "ising2d" /* ising2d */
+#define HOT_START "HS"
+#define CLD_START "CS"
+#define SEQ_UPD "S"
+#define PAR_UPD "P"
+#define ASY_DYN "A"
+#define SYN_DYN "S"
+#define MRKV_GEN "MKVP"
+#define ISING1DHSSA ISING1D _H HOT_START SEQ_UPD ASY_DYN /* ising1d-HSSA */
+#define ISING1DHSSS ISING1D _H HOT_START SEQ_UPD SYN_DYN /* ising1d-HSSS */
+#define ISING1DCSSA ISING1D _H CLD_START SEQ_UPD ASY_DYN /* ising1d-HSSS */
+#define ISING1DCSSS ISING1D _H CLD_START SEQ_UPD SYN_DYN /* ising1d-HSSS */
+#define ISING1DMKVP ISING1D _H MRKV_GEN                  /* ising1d-MKVP */
+#define ISING2DHSSA ISING2D _H HOT_START SEQ_UPD ASY_DYN /* ising2d-HSSA */
+#define ISING2DCSSA ISING2D _H CLD_START SEQ_UPD ASY_DYN /* ising2d-CSSA */
+#define ISING2DHSSS ISING2D _H HOT_START SEQ_UPD SYN_DYN /* ising2d-HSSS */
+#define ISING2DCSSS ISING2D _H CLD_START SEQ_UPD SYN_DYN /* ising2d-CSSS */
 
 #define STR_FIND "find"
 
@@ -164,11 +175,7 @@
 #define PWFRZNS _NSWTVT "configurations reached frozen state."
 #define PWFLPTH _NSWTVT "flip probability less than flip threshold."
 #define PWTAUTH _NSWTVT "tauint is less than 1 or couldnt be established."
-#if ISING1D
-#define PWEXDTH PWTAUTH
-#elif MARKOVP
-#define PWEXDTH PWFLPTH
-#endif
+
 
 #define PIFEXST _N_VT "file already exists " _SARW
 #define PIFNXST _N_VT "file did not exist " _SARW
