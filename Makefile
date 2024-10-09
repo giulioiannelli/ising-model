@@ -1,6 +1,13 @@
 # # Minimal makefile for main.c
 
 PATH_SRC  = src/
+PATH_TEST = test/
+PATH_DATA = data/
+PATH_LOG  = log/
+#
+PATH_LIBS = $(PATH_SRC)libs/
+PATH_CORE = $(PATH_SRC)core/
+#
 PATH_SFMT = dep/SFMT/
 srcFILESL.c = ising-lattice.c rngs.c fnlattice.c generic.c imcommon.c main-fnlattice.c
 srcFILESC.c = ising-chain.c rngs.c fnchain.c generic.c imcommon.c main-fnchain.c
